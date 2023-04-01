@@ -57,27 +57,27 @@ def main():
 
 
 def ingest():
-    print("INGEST")
+    print("INGEST MENU")
 
 
 def digest():
-    print("DIGEST")
+    print("DIGEST MENU")
 
 
 def delegate():
-    print("DELEGATE")
+    print("DELEGATE MENU")
 
 
 def settings():
-    print("SETTINGS")
+    print("SETTINGS MENU")
 
 
 def inventory():
-    print("INVENTORY")
+    print("INVENTORY MENU")
 
 
 def help_menu():
-    print("HELP")
+    print("HELP SCREEN")
 
 
 if __name__ == '__main__':
