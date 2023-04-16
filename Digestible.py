@@ -223,14 +223,18 @@ def ingest():
     inputs = []
 
     for i in psutil.disk_partitions():
+        print(i)
         add_volume = True
-        if psutil.disk_usage(i.mountpoint).total > 137438953472:
-            add_volume = False
-        if os.name == "posix" and i.mountpoint.startswith("/System"):
-            add_volume = False
+        try:
+            if psutil.disk_usage(i.mountpoint).total > 137438953472:
+                add_volume = False
+            if os.name == "posix" and i.mountpoint.startswith("/System"):
+                add_volume = False
 
-        if add_volume:
-            inputs.append(i.mountpoint)
+            if add_volume:
+                inputs.append(i.mountpoint)
+        except PermissionError:
+            pass
 
     extra_drive_files = 0
     for i in inputs:
@@ -246,7 +250,10 @@ def ingest():
         drive_files.append(str(files_on_drive) + " files")
 
     for i in image_list:
-        file_names.append(i.split("/")[-1])
+        if os.name == "nt":
+            file_names.append(i.split("\\")[-1])
+        else:
+            file_names.append(i.split("/")[-1])
 
     total_files = len(image_list)
     drives = len(inputs)
@@ -265,15 +272,15 @@ def ingest():
     canvas.create_text(41.0, 395.0, anchor="nw", text="Sort By:", fill="#FFFFFF", font=("Andale Mono", 15 * -1))
 
     body = tk.Checkbutton(window, text="Body Type", variable=sort_body)
-    body.tk_setPalette(background="#1F2124", foreground="white")
+    body.tk_setPalette(background="#1F2124", foreground="white", selectcolor="black")
     body.place(x=40, y=425.0)
 
     optics = tk.Checkbutton(window, text="Optics", variable=sort_optics)
-    optics.tk_setPalette(background="#1F2124", foreground="white")
+    optics.tk_setPalette(background="#1F2124", foreground="white", selectcolor="black")
     optics.place(x=133.0, y=425.0)
 
     orient = tk.Checkbutton(window, text="Orientation", variable=sort_orientation)
-    orient.tk_setPalette(background="#1F2124", foreground="white")
+    orient.tk_setPalette(background="#1F2124", foreground="white", selectcolor="black")
     orient.place(x=201.0, y=425.0)
 
     current_time = datetime.datetime.now()
@@ -404,7 +411,10 @@ def ingest_process(body, optics, orientation, progress, ingest_name, activity_li
     start_time = time.time()
 
     current_image = image_list[-1]
-    current_file = current_image.split("/")[-1]
+    if os.name == "nt":
+        current_file = current_image.split("\\")[-1]
+    else:
+        current_file = current_image.split("/")[-1]
     image_list.remove(current_image)
     file_names.remove(current_file)
 
@@ -468,7 +478,7 @@ def ingest_process(body, optics, orientation, progress, ingest_name, activity_li
         if output.replace(root, '') != "":
             activity_list.insert(next_index, f"Ingested {current_file} to .{output.replace(root, '')}")
         else:
-            activity_list.insert(next_index, f"Ingested {current_file} to ./{ingest_name}")
+            activity_list.insert(next_index, f"Ingested {current_file} to {ingest_name}")
         activity_list.yview_scroll(1, "unit")
 
     if len(image_list) > 0:
@@ -579,27 +589,27 @@ def delegate(selected_folder=""):
     d2e1, d2e2, d2e3, d2e4, d2e5, d2e6 = tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar()
 
     e1 = tk.Checkbutton(window, text=editors[0], variable=d2e1)
-    e1.tk_setPalette(background="#1F2124", foreground="white")
+    e1.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
     e1.place(x=470.0, y=160.0)
 
     e2 = tk.Checkbutton(window, text=editors[1], variable=d2e2)
-    e2.tk_setPalette(background="#1F2124", foreground="white")
+    e2.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
     e2.place(x=470.0, y=190.0)
 
     e3 = tk.Checkbutton(window, text=editors[2], variable=d2e3)
-    e3.tk_setPalette(background="#1F2124", foreground="white")
+    e3.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
     e3.place(x=470.0, y=220.0)
 
     e4 = tk.Checkbutton(window, text=editors[3], variable=d2e4)
-    e4.tk_setPalette(background="#1F2124", foreground="white")
+    e4.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
     e4.place(x=470.0, y=250.0)
 
     e5 = tk.Checkbutton(window, text=editors[4], variable=d2e5)
-    e5.tk_setPalette(background="#1F2124", foreground="white")
+    e5.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
     e5.place(x=470.0, y=280.0)
 
     e6 = tk.Checkbutton(window, text=editors[5], variable=d2e6)
-    e6.tk_setPalette(background="#1F2124", foreground="white")
+    e6.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
     e6.place(x=470.0, y=310.0)
 
     editor_names_var = tk.StringVar()
@@ -609,7 +619,7 @@ def delegate(selected_folder=""):
     ingest_name.focus_set()
     ingest_name.place(x=45.0, y=390)
 
-    delegating_to_message = canvas.create_text(41, 160, text=f"Delegating to nobody", anchor="nw", width=410)
+    delegating_to_message = canvas.create_text(41, 160, text=f"Delegating to nobody", anchor="nw", width=410, fill="#FFFFFF")
 
     button_image_1 = tk.PhotoImage(file="assets/frame6/button_1.png")
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0, command=lambda: delegate_in_progress(selected_folder), relief="flat")
@@ -648,7 +658,11 @@ def delegate_in_progress(selected_folder):
         else:
             delegating_to_editor += 1
 
-        current_file = image.split("/")[-1]
+        if os.name == "nt":
+            current_file = image.split("\\")[-1]
+        else:
+            current_file = image.split("/")[-1]
+
         file_names.remove(current_file)
 
         file_name = current_file
