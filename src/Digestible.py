@@ -57,18 +57,10 @@ def settings():
 
     canvas.create_rectangle(217.0, 58.0, 551.0, 61.0, fill="#2C2E2F", outline="")
 
-    add_default_output = tk.Button(text="Add an output directory", background="#1F2124", foreground="#000000", command=lambda: add_dir(), )
+    add_default_output = tk.Button(text="Add an output directory", background="#1F2124", foreground="#000000", command=lambda: add_dir())
     add_default_output.place(x=41, y=150)
 
     canvas.create_text(42, 200, text="This is where your ingests will go", anchor="nw", fill="#FFFFFF", font=("Andale Mono", 14 * -1))
-
-    canvas.create_text(42, 250, text="Current Saved Editors:", anchor="nw", fill="#FFFFFF", font=("Andale Mono", 18 * -1))
-
-    saved_editors_message = str(config["Program"]["saved editors"].split("*")).replace("[", "").replace("]", "")
-
-    canvas.create_text(42, 250, text=saved_editors_message, anchor="nw", fill="#FFFFFF", font=("Andale Mono", 18 * -1))
-
-    new_editors = tk.Entry()
 
     button_image_2 = tk.PhotoImage(file="assets/frame6/button_2.png")
     button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0, command=lambda: main("Came from the help menu"), relief="flat")
@@ -87,20 +79,8 @@ def add_dir():
         main("Did not change default output")
 
 
-def add_editors(new_editors):
-    editors = []
-    for i in new_editors.split(","):
-        editors.append(i.strip())
-
-    editor_string = editors[0]
-
-    for i in editors:
-        editor_string = editor_string + "*" + i
-
-    while len(editor_string.split("*").remove("")) < 6:
-        editor_string = editor_string + f"*Editor Slot {len(editor_string.split('*').remove('')) + 1}"
-
-    config["Program"]["saved editors"] = editor_string
+def add_editors():
+    current_editors = config["Program"]["saved editors"].split("*")
 
 
 def inventory():
@@ -118,16 +98,11 @@ def inventory():
 
 def help_menu():
     canvas = clear_screen()
+    # main("Help is WIP")
 
     window.title("Digestible · Help")
 
-    canvas.create_text(42.0, 37.0, anchor="nw", text="Help", fill="#FFFFFF", font=("Andale Mono", 36 * -1))
-
-    canvas.create_rectangle(150.0, 58.0, 484.0, 61.0, fill="#2C2E2F", outline="")
-
-    canvas.create_text(43, 115, text="Hello There!", font=("Andale Mono", 20), fill="#FFFFFF", anchor="nw")
-
-    canvas.create_text(43, 155, text="This is Digestible, a post-production workflow management system for part-time and freelance photographers. \nWith three different tools for you to use, Digestible aims to reduce the overall time you spend on post production by over 562%. \nThe Ingest mode can automatically import, sort and save your images to local storage quickly and effectively. \nThe Digest menu can then be used to look through each ingested image and separate the usable photos from the irreparable ones. \nThese images can then be delegated with Digestible too. Entering the names of your editors in the delegate menu will allow you to evenly split images between up to 26 editors.", font=("Andale Mono", 14), width=710, fill="#FFFFFF", anchor="nw")
+    canvas.create_text()
 
     button_image_2 = tk.PhotoImage(file="assets/frame6/button_2.png")
     button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0, command=lambda: main("Came from the help menu"), relief="flat")
