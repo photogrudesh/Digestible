@@ -1,10 +1,10 @@
 import configparser
 import datetime
-import math
 import os
 import shutil
 import time
 import tkinter as tk
+from environment import Environment
 
 import exifread
 import psutil
@@ -17,6 +17,8 @@ window.configure(bg="#1F2124")
 window.resizable(False, False)
 config = configparser.ConfigParser()
 
+environment = Environment()
+
 image_list = []
 file_names = []
 delegating_to = []
@@ -26,7 +28,8 @@ saved_editors = []
 
 
 def asset_relative_path(path):
-    full_path = os.path.join(os.getcwd(), path)
+    root_path = os.path.join(environment.get_main_path(), "assets")
+    full_path = os.path.join(root_path, path)
     return full_path
 
 
@@ -97,7 +100,6 @@ def settings():
         editors.remove("Open slot")
 
     if len(editors) == 0:
-        print(editors)
         placeholder_text = "Save some editors"
     else:
         placeholder_text = str(editors).replace('[', '').replace(']', '').replace("'", "")
@@ -111,7 +113,7 @@ def settings():
 
     canvas.create_text(42, 380, text=f"Alter your saved editors by adding names separated by commas.", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 14))
 
-    button_image_2 = tk.PhotoImage(file=asset_relative_path("assets/cancel.png"))
+    button_image_2 = tk.PhotoImage(file=asset_relative_path("cancel.png"))
     button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0, command=lambda: main("Came from the help menu"), relief="flat")
     button_2.place(x=695.0, y=421.0, width=64.0, height=25.0)
 
@@ -146,14 +148,12 @@ def add_editors(editor_string):
     for i in editor_string.get().split(","):
         if len(editors) < 6 and i.strip() not in editors:
             editors.append(i.strip())
-    print(editors)
 
     for name in editors:
         if editors.index(name) == 0:
             new_string = name
         else:
             new_string = new_string + "*" + name
-    print(new_string)
 
     config["Program"]["saved editors"] = new_string
     write(config)
@@ -167,7 +167,7 @@ def inventory():
 
     window.title("Digestible · Inventory")
 
-    cancel_image = tk.PhotoImage(file="assets/cancel.png")
+    cancel_image = tk.PhotoImage(file=asset_relative_path("cancel.png"))
     cancel_button = tk.Button(image=cancel_image, borderwidth=0, highlightthickness=0, command=lambda: main("Came from the !inventory"), relief="flat")
     cancel_button.place(x=695.0, y=421.0, width=64.0, height=25.0)
 
@@ -185,7 +185,7 @@ def help_menu():
 
     canvas.create_text(41, 100, anchor="nw", text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nWhen you get home after a shoot, Ingest mode makes it easy to process the files from your camera (cards under 100 GB). Digestible automatically sorts images by camera body, lens used, and orientation of the image so you don't have to.\n\nAfter you've ingested your images, it's time to start culling! Digest mode automatically separates images based on how usable they are by analysing exposure and blurriness, so you can quickly identify the images that are worth keeping.\n\nOnce you've sorted your images, it's time to delegate them to your team for post-production. Delegate mode automatically splits the sorted images between editors evenly so editing can become as soon as possible.", width=720, font=("Roboto Mono", 14), fill="#FFFFFF")
 
-    cancel_image = tk.PhotoImage(file="assets/cancel.png")
+    cancel_image = tk.PhotoImage(file=asset_relative_path("cancel.png"))
     cancel_button = tk.Button(image=cancel_image, borderwidth=0, highlightthickness=0, command=lambda: main("Came from the help menu"), relief="flat")
     cancel_button.place(x=695.0, y=421.0, width=64.0, height=25.0)
 
@@ -240,37 +240,37 @@ def main(message=""):
 
     change_message = canvas.create_text(400, 150, anchor="n", text=message, fill="#FFFFFF", font=("Roboto Mono", 15 * -1))
 
-    logo = tk.PhotoImage(file="assets/icon.png")
+    logo = tk.PhotoImage(file=asset_relative_path("icon.png"))
     canvas.create_image(60.0, 59.0, image=logo)
 
-    button_image_help = tk.PhotoImage(file="assets/main_help.png")
+    button_image_help = tk.PhotoImage(file=asset_relative_path("main_help.png"))
     help_btn = tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0,
                          command=lambda: help_menu(), relief="flat")
     help_btn.place(x=42.0, y=421.0, width=51.0, height=25.0)
 
-    button_image_settings = tk.PhotoImage(file="assets/main_settings.png")
+    button_image_settings = tk.PhotoImage(file=asset_relative_path("main_settings.png"))
     settings_btn = tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0,
                              command=lambda: settings(), relief="flat")
     settings_btn.place(x=678.0, y=421.0, width=81.0, height=24.0)
 
     canvas.create_text(747.0, 52.0, anchor="ne", text="Welcome back 👋", fill="#FFFFFF", font=("Roboto Mono", 14 * -1))
 
-    button_image_inventory = tk.PhotoImage(file="assets/main_inv.png")
+    button_image_inventory = tk.PhotoImage(file=asset_relative_path("main_inv.png"))
     inventory_btn = tk.Button(image=button_image_inventory, borderwidth=0, highlightthickness=0,
                               command=lambda: inventory(), relief="flat")
     inventory_btn.place(x=354.0, y=419.0, width=92.0, height=28.0)
 
-    button_image_ingest = tk.PhotoImage(file="assets/main_ingest.png")
+    button_image_ingest = tk.PhotoImage(file=asset_relative_path("main_ingest.png"))
     ingest_btn = tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0,
                            command=lambda: ingest(), relief="flat")
     ingest_btn.place(x=101.0, y=219.0, width=124.0, height=42.0)
 
-    button_image_delegate = tk.PhotoImage(file="assets/main_delegate.png")
+    button_image_delegate = tk.PhotoImage(file=asset_relative_path("main_delegate.png"))
     delegate_btn = tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0,
                              command=lambda: delegate(), relief="flat")
     delegate_btn.place(x=568.0, y=219.0, width=138.0, height=42.0)
 
-    button_image_digest = tk.PhotoImage(file="assets/main_digest.png")
+    button_image_digest = tk.PhotoImage(file=asset_relative_path("main_digest.png"))
     digest_btn = tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0,
                            command=lambda: digest(), relief="flat")
     digest_btn.place(x=338.0, y=219.0, width=124.0, height=42.0)
@@ -381,7 +381,7 @@ def ingest():
     ingest_name.focus_set()
     ingest_name.place(x=410.0, y=426)
 
-    button_image_1 = tk.PhotoImage(file="assets/ingest_start.png")
+    button_image_1 = tk.PhotoImage(file=asset_relative_path("ingest_start.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0, command=lambda: ingest_in_progress(drives, sort_body, sort_optics, sort_orientation, ingest_name_var.get().strip()), relief="flat")
     button_1.place(x=692.0, y=417.0, width=72.0, height=36.0)
 
@@ -389,7 +389,7 @@ def ingest():
 
     disable_ingest_button(canvas, ingest_name_var, button_1, message)
 
-    button_image_2 = tk.PhotoImage(file="assets/cancel.png")
+    button_image_2 = tk.PhotoImage(file=asset_relative_path("cancel.png"))
     button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0, command=lambda: main("Cancelled Ingest"), relief="flat")
     button_2.place(x=611.0, y=425.0, width=64.0, height=25.0)
 
@@ -458,12 +458,12 @@ def ingest_in_progress(drives, body, optics, orientation, ingest_name):
     canvas.create_rectangle(145.0, 58.0, 271.0, 61.0, fill="#2C2E2F", outline="")
     canvas.create_rectangle(526.0, 58.0, 651.0, 61.0, fill="#2C2E2F", outline="")
 
-    button_image_1 = tk.PhotoImage(file="assets/abort.png")
+    button_image_1 = tk.PhotoImage(file=asset_relative_path("abort.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0, command=lambda: main("Ingest Aborted"),
                          relief="flat")
     button_1.place(x=704.0, y=421.0, width=59.0, height=31.0)
 
-    entry_image_1 = tk.PhotoImage(file="assets/ingesting_entry.png")
+    entry_image_1 = tk.PhotoImage(file=asset_relative_path("ingesting_entry.png"))
     canvas.create_image(399.5, 282.0, image=entry_image_1)
 
     if drives == 1:
@@ -725,11 +725,11 @@ def delegate(selected_folder=""):
 
     delegating_to_message = canvas.create_text(41, 160, text=f"Delegating to nobody", anchor="nw", width=410, fill="#FFFFFF")
 
-    button_image_1 = tk.PhotoImage(file="assets/delegate_start.png")
+    button_image_1 = tk.PhotoImage(file=asset_relative_path("delegate_start.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0, command=lambda: delegate_in_progress(selected_folder), relief="flat")
     button_1.place(x=684.0, y=428.0, width=82.0, height=25.0)
 
-    button_image_2 = tk.PhotoImage(file="assets/cancel.png")
+    button_image_2 = tk.PhotoImage(file=asset_relative_path("cancel.png"))
     button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0, command=lambda: main("Delegation cancelled"), relief="flat")
     button_2.place(x=611.0, y=429.0, width=64.0, height=25.0)
 
@@ -746,8 +746,6 @@ def delegate_in_progress(selected_folder):
     average_time = 0
 
     canvas = clear_screen()
-
-    files_per_editor = math.ceil(len(image_list) / len(delegating_to))
 
     output = os.path.join(selected_folder, "Delegated Images")
 
@@ -804,7 +802,7 @@ def delegate_in_progress(selected_folder):
     canvas.after(5, lambda: delegate_process(canvas, images_left, progress, selected_folder, activity_list))
     window.after(10, lambda: time_left(canvas, time_remaining, images_left))
 
-    button_image_1 = tk.PhotoImage(file="assets/abort.png")
+    button_image_1 = tk.PhotoImage(file=asset_relative_path("abort.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0, command=lambda: main("Aborted delegation"), relief="flat")
     button_1.place(x=699.0, y=422.0, width=70.0, height=39.0)
 
@@ -865,24 +863,24 @@ def digest():
     canvas.create_text(400.0, 426.0, anchor="n", text="Long Operation Warning", fill="#FFFFFF",
                        font=("Roboto Mono", 16 * -1))
 
-    button_image_1 = tk.PhotoImage(file="assets/digest_start.png")
+    button_image_1 = tk.PhotoImage(file=asset_relative_path("digest_start.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0, command=lambda: digest_in_progress(),
                          relief="flat")
 
     button_1.place(x=683.0, y=418.0, width=80.0, height=35.0)
 
-    entry_image_1 = tk.PhotoImage(file="assets/digest_entry_1.png")
+    entry_image_1 = tk.PhotoImage(file=asset_relative_path("digest_entry_1.png"))
     canvas.create_image(182.0, 118.5, image=entry_image_1)
 
     entry_1 = tk.Entry(bd=0, bg="#1F2124", fg="#FFFFFF", highlightthickness=0)
 
     entry_1.place(x=40.0, y=106.0, width=284.0, height=23.0)
 
-    entry_image_2 = tk.PhotoImage(file="assets/digest_entry_2.png")
+    entry_image_2 = tk.PhotoImage(file=asset_relative_path("digest_entry_2.png"))
     canvas.create_image(399.5, 271.5, image=entry_image_2)
     entry_2 = tk.Text(bd=0, bg="#2C2E2F", fg="#FFFFFF", highlightthickness=0)
 
-    button_image_2 = tk.PhotoImage(file="assets/cancel.png")
+    button_image_2 = tk.PhotoImage(file=asset_relative_path("cancel.png"))
     button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0, command=lambda: main("Came from digest"), relief="flat")
     button_2.place(x=600.0, y=424.0, width=64.0, height=25.0)
 
@@ -907,15 +905,15 @@ def digest_in_progress():
     canvas.create_text(510.0, 271.0, anchor="nw", text="Current image is:", fill="#FFFFFF",
                        font=("Roboto Mono", 16 * -1))
 
-    button_image_1 = tk.PhotoImage(file="assets/abort.png")
+    button_image_1 = tk.PhotoImage(file=asset_relative_path("abort.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, command=lambda: main("Aborted Digest"), highlightthickness=0,
                          relief="flat")
     button_1.place(x=696.0, y=416.0, width=70.0, height=39.0)
 
-    image_image_1 = tk.PhotoImage(file="assets/placeholder_image.png")
+    image_image_1 = tk.PhotoImage(file=asset_relative_path("placeholder_image.png"))
     canvas.create_image(261.0, 259.0, image=image_image_1)
 
-    entry_image_1 = tk.PhotoImage(file="assets/digest_entry.png")
+    entry_image_1 = tk.PhotoImage(file=asset_relative_path("digest_entry.png"))
     canvas.create_image(635.5, 201.5, image=entry_image_1)
     entry_1 = tk.Text(bd=0, bg="#2C2E2F", fg="#FFFFFF", highlightthickness=0)
     entry_1.place(x=510.0, y=150.0, width=251.0, height=101.0)
