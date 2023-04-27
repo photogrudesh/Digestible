@@ -22,6 +22,12 @@ file_names = []
 delegating_to = []
 average_time = 0
 total_files = 0
+saved_editors = []
+
+
+def asset_relative_path(path):
+    full_path = os.path.join(os.getcwd(), path)
+    return full_path
 
 
 def clear_screen():
@@ -57,34 +63,102 @@ def settings():
 
     canvas.create_rectangle(217.0, 58.0, 551.0, 61.0, fill="#2C2E2F", outline="")
 
-    add_default_output = tk.Button(text="Add an output directory", background="#1F2124", foreground="#000000", command=lambda: add_dir())
+    canvas.create_text(43, 110, text="Output Preferences", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 18))
+
+    add_default_output = tk.Button(text="Add an output directory", fg="#000000", command=lambda: add_dir(default=True))
     add_default_output.place(x=41, y=150)
+
+    add_backup_output = tk.Button(text="Add a backup directory", fg="#000000", command=lambda: add_dir(default=False))
+    add_backup_output.place(x=220, y=150)
 
     canvas.create_text(42, 200, text="This is where your ingests will go", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 14 * -1))
 
-    button_image_2 = tk.PhotoImage(file="assets/cancel.png")
+    canvas.create_text(43, 270, text="Saved Editors", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 18))
+
+    if not config.has_option("Program", "saved editors"):
+        config["Program"]["saved editors"] = ""
+        write(config)
+
+    editors = config["Program"]["saved editors"].split("*")
+
+    try:
+        editors.remove("")
+    except ValueError:
+        pass
+
+    while len(editors) < 6:
+        editors.append("Open slot")
+
+    canvas.create_text(42, 300, text=f"{str(editors).replace('[', '').replace(']', '')}", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 14))
+
+    canvas.create_text(42, 350, text=f"Edit this list:", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 14))
+
+    while "Open slot" in editors:
+        editors.remove("Open slot")
+
+    if len(editors) == 0:
+        print(editors)
+        placeholder_text = "Save some editors"
+    else:
+        placeholder_text = str(editors).replace('[', '').replace(']', '').replace("'", "")
+
+    new_editors_var = tk.StringVar()
+    editors_to_add = tk.Entry(window, textvariable=new_editors_var, font=("Roboto Mono", 10), width=80)
+    editors_to_add.insert(0, f"{placeholder_text}")
+    editors_to_add.tk_setPalette(background="#1F2124")
+    editors_to_add.focus_set()
+    editors_to_add.place(x=165.0, y=348)
+
+    canvas.create_text(42, 380, text=f"Alter your saved editors by adding names separated by commas.", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 14))
+
+    button_image_2 = tk.PhotoImage(file=asset_relative_path("assets/cancel.png"))
     button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0, command=lambda: main("Came from the help menu"), relief="flat")
     button_2.place(x=695.0, y=421.0, width=64.0, height=25.0)
+
+    update_editors = tk.Button(text="Update", command=lambda: add_editors(new_editors_var), fg="#000000")
+    update_editors.place(x=665.0, y=344)
 
     window.mainloop()
 
 
-def add_dir():
+def add_dir(default):
     selected_folder = tk.filedialog.askdirectory()
 
     if os.name == "nt":
         selected_folder = selected_folder.replace("/", "\\")
 
-    if selected_folder:
+    if selected_folder and default:
         config["Program"]["default output"] = str(selected_folder)
         write(config)
         main(f"Changed your default output to {selected_folder}")
+    elif selected_folder and not default:
+        config["Program"]["backup output"] = str(selected_folder)
+        write(config)
+        main(f"Changed your backup output to {selected_folder}")
     else:
         main("Did not change default output")
 
 
-def add_editors():
-    current_editors = config["Program"]["saved editors"].split("*")
+def add_editors(editor_string):
+    new_string = ""
+    editors = []
+
+    for i in editor_string.get().split(","):
+        if len(editors) < 6 and i.strip() not in editors:
+            editors.append(i.strip())
+    print(editors)
+
+    for name in editors:
+        if editors.index(name) == 0:
+            new_string = name
+        else:
+            new_string = new_string + "*" + name
+    print(new_string)
+
+    config["Program"]["saved editors"] = new_string
+    write(config)
+
+    main("Updated saved editors")
 
 
 def inventory():
@@ -94,7 +168,7 @@ def inventory():
     window.title("Digestible · Inventory")
 
     cancel_image = tk.PhotoImage(file="assets/cancel.png")
-    cancel_button = tk.Button(image=cancel_image, borderwidth=0, highlightthickness=0, command=lambda: main("Came from the inventory"), relief="flat")
+    cancel_button = tk.Button(image=cancel_image, borderwidth=0, highlightthickness=0, command=lambda: main("Came from the !inventory"), relief="flat")
     cancel_button.place(x=695.0, y=421.0, width=64.0, height=25.0)
 
     window.mainloop()
@@ -102,11 +176,14 @@ def inventory():
 
 def help_menu():
     canvas = clear_screen()
-    main("Help is WIP")
 
     window.title("Digestible · Help")
 
-    # canvas.create_text()
+    canvas.create_text(42.0, 37.0, anchor="nw", text="Help", fill="#FFFFFF", font=("Roboto Mono", 36 * -1))
+
+    canvas.create_rectangle(157.0, 58.0, 501.0, 61.0, fill="#2C2E2F", outline="")
+
+    canvas.create_text(41, 100, anchor="nw", text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nWhen you get home after a shoot, Ingest mode makes it easy to process the files from your camera (cards under 100 GB). Digestible automatically sorts images by camera body, lens used, and orientation of the image so you don't have to.\n\nAfter you've ingested your images, it's time to start culling! Digest mode automatically separates images based on how usable they are by analysing exposure and blurriness, so you can quickly identify the images that are worth keeping.\n\nOnce you've sorted your images, it's time to delegate them to your team for post-production. Delegate mode automatically splits the sorted images between editors evenly so editing can become as soon as possible.", width=720, font=("Roboto Mono", 14), fill="#FFFFFF")
 
     cancel_image = tk.PhotoImage(file="assets/cancel.png")
     cancel_button = tk.Button(image=cancel_image, borderwidth=0, highlightthickness=0, command=lambda: main("Came from the help menu"), relief="flat")
@@ -520,24 +597,24 @@ def check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4
     global delegating_to
     delegating_to = []
 
+    if d2e1.get() == 1 and editors[0] != "Save an editor to this list from settings":
+        delegating_to.append(editors[0].lower())
+    if d2e2.get() == 1 and editors[1] != "Save an editor to this list from settings":
+        delegating_to.append(editors[1].lower())
+    if d2e3.get() == 1 and editors[2] != "Save an editor to this list from settings":
+        delegating_to.append(editors[2].lower())
+    if d2e4.get() == 1 and editors[3] != "Save an editor to this list from settings":
+        delegating_to.append(editors[3].lower())
+    if d2e5.get() == 1 and editors[4] != "Save an editor to this list from settings":
+        delegating_to.append(editors[4].lower())
+    if d2e6.get() == 1 and editors[5] != "Save an editor to this list from settings":
+        delegating_to.append(editors[5].lower())
+
     additional_editors = entered_editors.get().split(",")
     for i in additional_editors:
         name_to_add = i.strip().replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", "")
-        if name_to_add != "Type names here" and name_to_add != "" and len(i) < 20 and name_to_add not in delegating_to and len(delegating_to) < 20:
-            delegating_to.append(name_to_add)
-
-    if d2e1.get() == 1 and editors[0] != "Save an editor to this list from settings":
-        delegating_to.append(editors[0])
-    if d2e2.get() == 1 and editors[1] != "Save an editor to this list from settings":
-        delegating_to.append(editors[1])
-    if d2e3.get() == 1 and editors[2] != "Save an editor to this list from settings":
-        delegating_to.append(editors[2])
-    if d2e4.get() == 1 and editors[3] != "Save an editor to this list from settings":
-        delegating_to.append(editors[3])
-    if d2e5.get() == 1 and editors[4] != "Save an editor to this list from settings":
-        delegating_to.append(editors[4])
-    if d2e6.get() == 1 and editors[5] != "Save an editor to this list from settings":
-        delegating_to.append(editors[5])
+        if name_to_add != "Type names here" and name_to_add != "" and len(i) < 20 and name_to_add.lower() not in delegating_to and len(delegating_to) < 20:
+            delegating_to.append(name_to_add.lower())
 
     if len(delegating_to) == 0:
         message = "Delegating to nobody"
@@ -608,8 +685,7 @@ def delegate(selected_folder=""):
 
     images_per_person_message = canvas.create_text(400.0, 116.0, anchor="n", text=f"Total Images: {total_files}  |  Images per person: ", fill="#FFFFFF", font=("Roboto Mono", 14 * -1))
 
-    # editors = config["Program"]["saved editors"].split("*")
-    editors = ["Editor 1", "Editor 2", "Editor 3", "Editor 4", "Editor 5", "Editor 6"]
+    editors = config["Program"]["saved editors"].split("*")
 
     while len(editors) < 6:
         editors.append("Save an editor to this list from settings")
@@ -641,11 +717,11 @@ def delegate(selected_folder=""):
     e6.place(x=470.0, y=310.0)
 
     editor_names_var = tk.StringVar()
-    ingest_name = tk.Entry(window, textvariable=editor_names_var, font=("Roboto Mono", 10), width=50)
-    ingest_name.insert(0, f"Type names here")
-    ingest_name.tk_setPalette(background="#1F2124")
-    ingest_name.focus_set()
-    ingest_name.place(x=45.0, y=390)
+    editor_names = tk.Entry(window, textvariable=editor_names_var, font=("Roboto Mono", 10), width=50)
+    editor_names.insert(0, f"Type names here")
+    editor_names.tk_setPalette(background="#1F2124")
+    editor_names.focus_set()
+    editor_names.place(x=45.0, y=390)
 
     delegating_to_message = canvas.create_text(41, 160, text=f"Delegating to nobody", anchor="nw", width=410, fill="#FFFFFF")
 
@@ -672,7 +748,6 @@ def delegate_in_progress(selected_folder):
     canvas = clear_screen()
 
     files_per_editor = math.ceil(len(image_list) / len(delegating_to))
-    print(files_per_editor)
 
     output = os.path.join(selected_folder, "Delegated Images")
 
@@ -707,7 +782,6 @@ def delegate_in_progress(selected_folder):
         image_list[index] = [image, editor_output, file_name]
 
     image_list.sort(key=lambda item: item[1])
-    print(image_list)
 
     window.title("Digestible · Delegating")
 
@@ -766,9 +840,6 @@ def delegate_process(canvas, images_left, progress, selected_folder, activity_li
     progress["value"] = 100 - len(image_list)/total_files * 100
 
     average_time = (average_time * (num_files - 1) + time.time() - start_time) / num_files
-    print(average_time)
-
-    print(f"Copied {original_path} to {editor_folder}")
 
     if len(image_list) == 0:
         main(f"Delegated {total_files} to {len(delegating_to)}")
