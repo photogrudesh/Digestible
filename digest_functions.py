@@ -42,7 +42,7 @@ def check_exposure(image):
 
     if average_pixel_value > 180 and bright_pixels > 0.8 * (height * width):
         exposure = "Overexposed"
-    elif bright_pixels < 0.1 * (height * width) and brightest_pixel < 180:
+    elif bright_pixels < 0.1 * (height * width) and brightest_pixel < 170:
         exposure = "Underexposed"
 
     return exposure
@@ -50,7 +50,8 @@ def check_exposure(image):
 
 def check_colour(image):
     colour_dominance = "None"
-    average_pixels = [0, 0, 0]
+    reds, greens, blues = 0, 0, 0
+    total_pixels = image.height * image.width
 
     for y in range(image.height):
         for x in range(image.width):
@@ -58,31 +59,39 @@ def check_colour(image):
             if pixels[0] < 50 and pixels[0] < 50 and pixels[0] < 50:
                 pass
             else:
-                average_pixels[0] += pixels[0]
-                average_pixels[1] += pixels[1]
-                average_pixels[2] += pixels[2]
+                highest_pixels = max(pixels)
+                if highest_pixels == pixels[0]:
+                    reds += 1
+                elif highest_pixels == pixels[1]:
+                    greens += 1
+                elif highest_pixels == pixels[2]:
+                    blues += 1
 
-    for i in range(3):
-        average_pixels[i - 1] = average_pixels[i - 1] / (image.height * image.width)
+    highest = max(reds, greens, blues)
 
-    highest = [0, None]
+    if highest == reds and highest/total_pixels < 0.5:
+        highest = max(greens, blues)
 
-    for i in average_pixels:
-        if i > highest[0]:
-            highest[0] = i
-            highest[1] = average_pixels.index(i)
+    print(reds, greens, blues, highest)
 
-    match highest[1]:
-        case 0:
-            colour_dominance = "Red dominant"
-        case 1:
-            colour_dominance = "Green dominant"
-        case 2:
-            colour_dominance = "Blue dominant"
+    if highest == reds:
+        colour_dominance = "Red dominant"
+    elif highest == greens:
+        colour_dominance = "Green dominant"
+    elif highest == blues:
+        colour_dominance = "Blue dominant"
 
-    for i in average_pixels:
-        if highest[0] - i < 10 and highest[0] - i != 0:
-            colour_dominance = "Normal colour distribution"
+    try:
+        if highest == reds and blues/greens < 0.1:
+            colour_dominance = "Yellow dominant"
+    except ZeroDivisionError:
+        pass
+
+    if blues == 0 and greens == 0:
+        colour_dominance = "Black and white"
+
+    if highest/total_pixels < 0.50:
+        colour_dominance = "Normal colour distribution"
 
     return colour_dominance
 

@@ -43,38 +43,40 @@ class Ingest:
         else:
             try:
                 file = open(current_image, 'rb')
-
-                if self.optics.get() == 1:
-                    tags = exifread.process_file(file, stop_tag='LensModel', details=False)
-                else:
-                    tags = exifread.process_file(file, stop_tag='Image Orientation', details=False)
-
-                if self.body.get() == 1:
-                    output = os.path.join(output,
-                                          str(tags['Image Model']).replace("/", "").replace("\\", "").replace("*",
-                                                                                                              "").replace(
-                                              ":", "").replace("<", "").replace(">", "").replace("|", ""))
-                    body_name = str(tags['Image Model'])
-
-                if self.optics.get() == 1:
-                    output = os.path.join(output,
-                                          str(tags['EXIF LensModel']).replace("/", "").replace("\\", "").replace("*",
-                                                                                                                 "").replace(
-                                              ":", "").replace("<", "").replace(">", "").replace("|", ""))
-                    lens_name = str(tags['EXIF LensModel'])
-
-                if self.orientation.get() == 1:
-                    output = os.path.join(output,
-                                          str(tags['Image Orientation']).replace("/", "").replace("\\", "").replace("*",
-                                                                                                                    "").replace(
-                                              ":", "").replace("<", "").replace(">", "").replace("|", ""))
-                    orientation_str = str(tags['Image Orientation'])
-
-            except exifread.exceptions:
                 if is_media(current_image) == "video":
                     output = os.path.join(output, "Videos")
-                elif is_media(current_image) == "image":
-                    output = os.path.join(output, "Unsorted (No image data)")
+                else:
+                    if self.optics.get() == 1:
+                        tags = exifread.process_file(file, stop_tag='LensModel', details=False)
+                    else:
+                        tags = exifread.process_file(file, stop_tag='Image Orientation', details=False)
+
+                    file.close()
+
+                    if self.body.get() == 1 and "Image Model" in tags:
+                        body_name = str(tags['Image Model'])
+                    else:
+                        body_name = "Body unknown"
+
+                    output = os.path.join(output, body_name.replace("/", "").replace("\\", "").replace("*", "").replace( ":", "").replace("<", "").replace(">", "").replace("|", ""))
+
+                    if self.optics.get() == 1 and "EXIF LensModel" in tags:
+                        lens_name = str(tags['EXIF LensModel'])
+                    else:
+                        lens_name = "Lens unknown"
+
+                    output = os.path.join(output, lens_name.replace("/", "").replace("\\", "").replace("*", "").replace( ":", "").replace("<", "").replace(">", "").replace("|", ""))
+
+                    if self.orientation.get() == 1 and "Image Orientation" in tags:
+                        orientation_str = str(tags['Image Orientation'])
+                    else:
+                        orientation_str = "Orientation unknown"
+
+                    output = os.path.join(output, orientation_str.replace("/", "").replace("\\", "").replace("*", "").replace( ":", "").replace("<", "").replace(">", "").replace("|", ""))
+
+                    if body_name == "Body unknown" and lens_name == "Lens unknown" and orientation_str == "Orientation unknown":
+                        output = os.path.join(self.root, "Unsorted (No image data)")
+
             except FileNotFoundError:
                 self.ingest_failed = True
 
@@ -104,7 +106,7 @@ class Ingest:
             if body_name == "Unknown" and lens_name == "Unknown" and orientation_str == "Unknown":
                 message = "Image was not sorted"
             else:
-                message = f"Shot on {body_name.strip()} with {lens_name.strip()}"
+                message = f"Shot on {body_name.strip()} with {lens_name.strip()} in {orientation_str} orientation"
 
             self.activity_list.insert(next_index, f"Ingested {self.current_file}: {message}")
             self.activity_list.yview_scroll(1, "unit")
