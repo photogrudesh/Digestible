@@ -2,24 +2,18 @@ from PIL import Image
 from io import BytesIO
 
 import exifread as exifread
+from thumbnail import generate_thumbnail
 
 
 def get_thumbnail(image):
-    img = open(image, "rb")
+    raw = rawpy.imread(image)
+    rgb = raw.postprocess()
+    thumbnail_image = Image.fromarray(rgb)  # Pillow image
 
-    tags = exifread.process_file(img, stop_tag='JPEGThumbnail')
-
-    try:
-        thumbnail_tag = tags["JPEGThumbnail"]
-        thumbnail_pixel_data = BytesIO(thumbnail_tag)
-        return Image.open(thumbnail_pixel_data)
-    except KeyError:
-        return "no thumbnail"
+    return thumbnail_image
 
 
 def check_exposure(image):
-    exposure = "Normal"
-
     average_pixel_value = 0
     bright_pixels = 0
     brightest_pixel = 0
@@ -42,8 +36,10 @@ def check_exposure(image):
 
     if average_pixel_value > 180 and bright_pixels > 0.8 * (height * width):
         exposure = "Overexposed"
-    elif bright_pixels < 0.1 * (height * width) and brightest_pixel < 170:
+    elif bright_pixels < 0.1 * (height * width) and brightest_pixel < 175:
         exposure = "Underexposed"
+    else:
+        exposure = "Exposed correctly"
 
     return exposure
 
@@ -71,8 +67,6 @@ def check_colour(image):
 
     if highest == reds and highest/total_pixels < 0.5:
         highest = max(greens, blues)
-
-    print(reds, greens, blues, highest)
 
     if highest == reds:
         colour_dominance = "Red dominant"

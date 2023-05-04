@@ -207,6 +207,8 @@ def time_left(canvas, time_remaining, images_left):
         else:
             eta = "About " + str(round(eta, 2)) + " seconds(s) remaining"
 
+    last_eta = average_time * items_left
+
     canvas.itemconfig(images_left, text=f"{str(len(image_list))} files left from {str(total_files)}")
 
     canvas.itemconfig(time_remaining, text=eta)
@@ -603,7 +605,7 @@ def digest_process(progress, activity_list, colour, exposure, blur, folder):
 
     name = ""
     colour_dominance = "Not tested"
-    exposure_check = "Exposed correctly"
+    exposure_check = "Not tested"
     blurry = False
 
     if file_name in file_names:
