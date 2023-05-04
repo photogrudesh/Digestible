@@ -54,21 +54,21 @@ class Ingest:
                     file.close()
 
                     if self.body.get() == 1 and "Image Model" in tags:
-                        body_name = str(tags['Image Model'])
+                        body_name = str(tags['Image Model']).strip()
                     else:
                         body_name = "Body unknown"
 
                     output = os.path.join(output, body_name.replace("/", "").replace("\\", "").replace("*", "").replace( ":", "").replace("<", "").replace(">", "").replace("|", ""))
 
                     if self.optics.get() == 1 and "EXIF LensModel" in tags:
-                        lens_name = str(tags['EXIF LensModel'])
+                        lens_name = str(tags['EXIF LensModel']).strip()
                     else:
                         lens_name = "Lens unknown"
 
                     output = os.path.join(output, lens_name.replace("/", "").replace("\\", "").replace("*", "").replace( ":", "").replace("<", "").replace(">", "").replace("|", ""))
 
                     if self.orientation.get() == 1 and "Image Orientation" in tags:
-                        orientation_str = str(tags['Image Orientation'])
+                        orientation_str = str(tags['Image Orientation']).strip()
                     else:
                         orientation_str = "Orientation unknown"
 
@@ -108,5 +108,5 @@ class Ingest:
             else:
                 message = f"Shot on {body_name.strip()} with {lens_name.strip()} in {orientation_str} orientation"
 
-            self.activity_list.insert(next_index, f"Ingested {self.current_file}: {message}")
+            self.activity_list.insert(next_index, f"{self.current_file}: {message}")
             self.activity_list.yview_scroll(1, "unit")

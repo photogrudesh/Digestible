@@ -26,7 +26,7 @@ window.geometry("800x480")
 window.configure(bg="#1F2124")
 window.resizable(False, False)
 config = configparser.ConfigParser()
-version_number = "v0.2.0"
+version_number = "Digestible v0.2.1"
 
 image_list = []
 file_names = []
@@ -187,8 +187,6 @@ def time_left(canvas, time_remaining, images_left):
     items_left = total_files - num_files
 
     eta = average_time * items_left
-
-    print(num_files, items_left)
 
     if num_files/total_files < 0.1:
         eta = "Calculating time remaining"
@@ -372,7 +370,7 @@ def ingest_in_progress(drives, body, optics, orientation, ingest_name):
     progress.place(x=41, y=375)
 
     time_remaining = canvas.create_text(41.0, 426.0, anchor="nw", text="", fill="#FFFFFF",
-                                        font=("Roboto Mono", 13 * -1))
+                                        font=("Roboto Mono", 14 * -1))
     activity_list = tk.Listbox(font=("Roboto Mono", 13))
     activity_list.place(x=41.0, y=187.0, width=717.0, height=188.0)
 
@@ -420,7 +418,7 @@ def ingest_process(ingest_class, progress, activity_list):
         window.after(1, lambda: ingest_process(ingest_class, progress, activity_list))
     else:
         time.sleep(0.5)
-        main(f"Ingested {total_files} files to {ingest_class.root}")
+        main(f"Ingested {total_files} files")
 
 
 def disable_ingest_button(canvas, ingest_name_var, button_1, message):
@@ -431,7 +429,7 @@ def disable_ingest_button(canvas, ingest_name_var, button_1, message):
     root = ""
 
     try:
-        root = os.path.join(str(config["Program"]["default output"]), ingest_name)
+        root = os.path.join(str(config["Program"]["default output"]), str(ingest_name))
     except KeyError:
         main("Add a default output path in settings before ingesting")
 
@@ -550,7 +548,7 @@ def digest_in_progress(colour, exposure, blur, folder):
     progress.place(x=41, y=375)
 
     time_remaining = canvas.create_text(41.0, 426.0, anchor="nw", text="", fill="#FFFFFF",
-                                        font=("Roboto Mono", 13 * -1))
+                                        font=("Roboto Mono", 14 * -1))
     activity_list = tk.Listbox(font=("Roboto Mono", 13))
     activity_list.place(x=41.0, y=187.0, width=717.0, height=188.0)
 
@@ -893,7 +891,7 @@ def delegate_in_progress(selected_folder):
     images_left = canvas.create_text(400.0, 145.0, anchor="n", text="", fill="#FFFFFF", font=("Roboto Mono", 15 * -1))
 
     time_remaining = canvas.create_text(41.0, 426.0, anchor="nw", text="", fill="#FFFFFF",
-                                        font=("Roboto Mono", 13 * -1))
+                                        font=("Roboto Mono", 14 * -1))
     activity_list = tk.Listbox(font=("Roboto Mono", 13))
     activity_list.place(x=41.0, y=187.0, width=717.0, height=188.0)
 
