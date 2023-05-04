@@ -48,18 +48,18 @@ def settings():
 
     canvas.create_rectangle(217.0, 58.0, 551.0, 61.0, fill="#2C2E2F", outline="")
 
-    canvas.create_text(43, 110, text="Output Preferences", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 18))
+    canvas.create_text(43, 110, text="Output Preferences", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 15))
 
-    add_default_output = tk.Button(text="Add an output directory", fg="#000000", command=lambda: add_dir(default=True))
+    add_default_output = tk.Button(text="Add an output directory", fg="#000000", bg="#FFFFFF", command=lambda: add_dir(default=True))
     add_default_output.place(x=41, y=150)
 
-    add_backup_output = tk.Button(text="Add a backup directory", fg="#000000", command=lambda: add_dir(default=False))
+    add_backup_output = tk.Button(text="Add a backup directory", fg="#000000", bg="#FFFFFF", command=lambda: add_dir(default=False))
     add_backup_output.place(x=220, y=150)
 
     canvas.create_text(42, 200, text="This is where your ingests will go", anchor="nw", fill="#FFFFFF",
                        font=("Roboto Mono", 14 * -1))
 
-    canvas.create_text(43, 270, text="Saved Editors", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 18))
+    canvas.create_text(43, 270, text="Saved Editors", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 15))
 
     if not config.has_option("Program", "saved editors"):
         config["Program"]["saved editors"] = ""
@@ -76,7 +76,7 @@ def settings():
         editors.append("Open slot")
 
     canvas.create_text(42, 300, text=f"{str(editors).replace('[', '').replace(']', '')}", anchor="nw", fill="#FFFFFF",
-                       font=("Roboto Mono", 14))
+                       font=("Roboto Mono", 11))
 
     canvas.create_text(42, 350, text=f"Edit this list:", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 14))
 
@@ -89,21 +89,21 @@ def settings():
         placeholder_text = str(editors).replace('[', '').replace(']', '').replace("'", "")
 
     new_editors_var = tk.StringVar()
-    editors_to_add = tk.Entry(window, textvariable=new_editors_var, font=("Roboto Mono", 10), width=80)
+    editors_to_add = tk.Entry(window, textvariable=new_editors_var, font=("Roboto Mono", 10), width=50)
     editors_to_add.insert(0, f"{placeholder_text}")
     editors_to_add.tk_setPalette(background="#1F2124")
     editors_to_add.focus_set()
-    editors_to_add.place(x=165.0, y=348)
+    editors_to_add.place(x=210.0, y=350)
 
     canvas.create_text(42, 380, text=f"Alter your saved editors by adding names separated by commas.", anchor="nw",
-                       fill="#FFFFFF", font=("Roboto Mono", 14))
+                       fill="#FFFFFF", font=("Roboto Mono", 12))
 
     button_image_2 = tk.PhotoImage(file=asset_relative_path("cancel.png"))
     button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0,
                          command=lambda: main(), relief="flat")
     button_2.place(x=695.0, y=421.0, width=64.0, height=25.0)
 
-    update_editors = tk.Button(text="Update", command=lambda: add_editors(new_editors_var), fg="#000000")
+    update_editors = tk.Button(text="Update", command=lambda: add_editors(new_editors_var), fg="#000000", bg="#FFFFFF")
     update_editors.place(x=665.0, y=344)
 
     window.mainloop()
@@ -172,7 +172,7 @@ def help_menu():
 
     canvas.create_text(41, 100, anchor="nw",
                        text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nWhen you get home after a shoot, Ingest mode makes it easy to process the files from your camera (cards under 100 GB). Digestible automatically sorts images by camera body, lens used, and orientation of the image so you don't have to.\n\nAfter you've ingested your images, it's time to start culling! Digest mode automatically separates images based on how usable they are by analysing exposure and blurriness, so you can quickly identify the images that are worth keeping.\n\nOnce you've sorted your images, it's time to delegate them to your team for post-production. Delegate mode automatically splits the sorted images between editors evenly so editing can become as soon as possible.",
-                       width=720, font=("Roboto Mono", 14), fill="#FFFFFF")
+                       width=720, font=("Roboto Mono", 10), fill="#FFFFFF")
 
     cancel_image = tk.PhotoImage(file=asset_relative_path("cancel.png"))
     cancel_button = tk.Button(image=cancel_image, borderwidth=0, highlightthickness=0,
@@ -311,19 +311,19 @@ def ingest():
     if extra_drives > 0:
         canvas.create_text(400.0, 250.0, anchor="n",
                            text=f"{extra_drive_files} files to ingest from {extra_drives} other drive(s)",
-                           fill="#FFFFFF", font=("Roboto Mono", 16 * -1), justify="center")
+                           fill="#FFFFFF", font=("Roboto Mono", 12 * -1), justify="center")
 
     if len(image_list) > 1000:
         canvas.create_text(400.0, 307.0, anchor="n", text=f"This may take a while, {len(image_list)} images to ingest",
-                           fill="#FF0000", font=("Roboto Mono", 16 * -1), justify="center")
+                           fill="#FF0000", font=("Roboto Mono", 12 * -1), justify="center")
     else:
         canvas.create_text(400.0, 297.0, anchor="n",
                            text=f"{len(image_list)} images to ingest\n(Ignoring drives over 100 GB in size)",
-                           fill="#FFFFFF", font=("Roboto Mono", 16 * -1), justify="center")
+                           fill="#FFFFFF", font=("Roboto Mono", 12 * -1), justify="center")
 
-    canvas.create_text(150.0, 150.0, anchor="n", text=inputs[0], fill="#FFFFFF", font=("Roboto Mono", 20 * -1))
-    canvas.create_text(400.0, 150.0, anchor="n", text=inputs[1], fill="#FFFFFF", font=("Roboto Mono", 20 * -1))
-    canvas.create_text(650.0, 150.0, anchor="n", text=inputs[2], fill="#FFFFFF", font=("Roboto Mono", 20 * -1))
+    canvas.create_text(150.0, 150.0, anchor="n", text=inputs[0], fill="#FFFFFF", font=("Roboto Mono", 16 * -1))
+    canvas.create_text(400.0, 150.0, anchor="n", text=inputs[1], fill="#FFFFFF", font=("Roboto Mono", 16 * -1))
+    canvas.create_text(650.0, 150.0, anchor="n", text=inputs[2], fill="#FFFFFF", font=("Roboto Mono", 16 * -1))
     canvas.create_text(150.0, 184.0, anchor="n", text=drive_files[0], fill="#FFFFFF", font=("Roboto Mono", 15 * -1))
     canvas.create_text(400.0, 184.0, anchor="n", text=drive_files[1], fill="#FFFFFF", font=("Roboto Mono", 15 * -1))
     canvas.create_text(650.0, 184.0, anchor="n", text=drive_files[2], fill="#FFFFFF", font=("Roboto Mono", 15 * -1))
@@ -360,11 +360,11 @@ def ingest_in_progress(drives, body, optics, orientation, ingest_name):
     if drives == 1:
         canvas.create_text(400.0, 108.0, anchor="n",
                            text=f"Ingesting {str(total_files)} files from {str(drives)} drive", fill="#FFFFFF",
-                           font=("Roboto Mono", 20 * -1))
+                           font=("Roboto Mono", 16 * -1))
     else:
         canvas.create_text(400.0, 108.0, anchor="n",
                            text=f"Ingesting {str(total_files)} files from {str(drives)} drives", fill="#FFFFFF",
-                           font=("Roboto Mono", 20 * -1))
+                           font=("Roboto Mono", 16 * -1))
 
     images_left = canvas.create_text(400.0, 145.0, anchor="n", text="", fill="#FFFFFF", font=("Roboto Mono", 15 * -1))
 
@@ -372,7 +372,7 @@ def ingest_in_progress(drives, body, optics, orientation, ingest_name):
     progress.place(x=41, y=375)
 
     time_remaining = canvas.create_text(41.0, 426.0, anchor="nw", text="", fill="#FFFFFF",
-                                        font=("Roboto Mono", 16 * -1))
+                                        font=("Roboto Mono", 13 * -1))
     activity_list = tk.Listbox(font=("Roboto Mono", 13))
     activity_list.place(x=41.0, y=187.0, width=717.0, height=188.0)
 
@@ -456,7 +456,7 @@ def disable_ingest_button(canvas, ingest_name_var, button_1, message):
     canvas.after(1, lambda: disable_ingest_button(canvas, ingest_name_var, button_1, message))
 
 
-def digest(selected_folder="/Users/sudesh/Pictures/Digestible Output/Athletics Carnival"):
+def digest(selected_folder=""):
     global total_files
     global image_list
     global file_names
@@ -489,14 +489,14 @@ def digest(selected_folder="/Users/sudesh/Pictures/Digestible Output/Athletics C
 
     if len(image_list) > 500:
         canvas.create_text(400.0, 108.0, anchor="n", text=f"{str(total_files)} files to digest. This may take a while",
-                           fill="#FFFFFF", font=("Roboto Mono", 20 * -1))
+                           fill="#FFFFFF", font=("Roboto Mono", 16 * -1))
     else:
         canvas.create_text(400.0, 108.0, anchor="n", text=f"{str(total_files)} files to digest.", fill="#FFFFFF",
-                           font=("Roboto Mono", 20 * -1))
+                           font=("Roboto Mono", 16 * -1))
 
     canvas.create_text(400.0, 37.0, anchor="n", text="Digest", fill="#FFFFFF", font=("Roboto Mono", 36 * -1))
 
-    canvas.create_text(41.0, 160.0, anchor="nw", text="Options:", fill="#FFFFFF", font=("Roboto Mono", 16 * -1))
+    canvas.create_text(41.0, 160.0, anchor="nw", text="Options:", fill="#FFFFFF", font=("Roboto Mono", 12 * -1))
 
     colour, exposure, blur = tk.IntVar(), tk.IntVar(), tk.IntVar()
 
@@ -550,7 +550,7 @@ def digest_in_progress(colour, exposure, blur, folder):
     progress.place(x=41, y=375)
 
     time_remaining = canvas.create_text(41.0, 426.0, anchor="nw", text="", fill="#FFFFFF",
-                                        font=("Roboto Mono", 16 * -1))
+                                        font=("Roboto Mono", 13 * -1))
     activity_list = tk.Listbox(font=("Roboto Mono", 13))
     activity_list.place(x=41.0, y=187.0, width=717.0, height=188.0)
 
@@ -563,7 +563,7 @@ def digest_in_progress(colour, exposure, blur, folder):
     canvas.create_rectangle(524.0, 58.0, 651.0, 61.0, fill="#2C2E2F", outline="")
 
     canvas.create_text(510.0, 271.0, anchor="nw", text="Current image is:", fill="#FFFFFF",
-                       font=("Roboto Mono", 16 * -1))
+                       font=("Roboto Mono", 12 * -1))
 
     button_image_1 = tk.PhotoImage(file=asset_relative_path("abort.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, command=lambda: abort(),
@@ -760,7 +760,7 @@ def delegate(selected_folder=""):
     e6.place(x=470.0, y=310.0)
 
     editor_names_var = tk.StringVar()
-    editor_names = tk.Entry(window, textvariable=editor_names_var, font=("Roboto Mono", 10), width=50)
+    editor_names = tk.Entry(window, textvariable=editor_names_var, font=("Roboto Mono", 10), width=38)
     editor_names.insert(0, f"Type names here")
     editor_names.tk_setPalette(background="#1F2124")
     editor_names.focus_set()
@@ -893,7 +893,7 @@ def delegate_in_progress(selected_folder):
     images_left = canvas.create_text(400.0, 145.0, anchor="n", text="", fill="#FFFFFF", font=("Roboto Mono", 15 * -1))
 
     time_remaining = canvas.create_text(41.0, 426.0, anchor="nw", text="", fill="#FFFFFF",
-                                        font=("Roboto Mono", 16 * -1))
+                                        font=("Roboto Mono", 13 * -1))
     activity_list = tk.Listbox(font=("Roboto Mono", 13))
     activity_list.place(x=41.0, y=187.0, width=717.0, height=188.0)
 
@@ -953,7 +953,6 @@ def main(message=""):
 
     try:
         response = requests.get("https://api.github.com/repos/photogrudesh/digestible/releases/latest", timeout=3)
-        print(response.json()["name"], version_number)
         if response.json()["name"] != version_number:
             canvas.itemconfig(welcome_message, text=f"{response.json()['name']} is available 🌐")
     except requests.ConnectionError:
