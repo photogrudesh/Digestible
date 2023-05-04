@@ -1,14 +1,12 @@
 from PIL import Image
-from io import BytesIO
-
-import exifread as exifread
-from thumbnail import generate_thumbnail
+import rawpy
 
 
 def get_thumbnail(image):
     raw = rawpy.imread(image)
     rgb = raw.postprocess()
     thumbnail_image = Image.fromarray(rgb)  # Pillow image
+    thumbnail_image = thumbnail_image.resize((150, 120))
 
     return thumbnail_image
 

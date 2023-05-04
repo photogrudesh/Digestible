@@ -26,7 +26,7 @@ window.geometry("800x480")
 window.configure(bg="#1F2124")
 window.resizable(False, False)
 config = configparser.ConfigParser()
-version_number = "Digestible v0.2.1"
+version_number = "v0.2.0"
 
 image_list = []
 file_names = []
@@ -186,28 +186,22 @@ def time_left(canvas, time_remaining, images_left):
     num_files = total_files - len(image_list)
     items_left = total_files - num_files
 
-    global last_eta
-    global started_calculation
     eta = average_time * items_left
 
-    if last_eta == 0 and not started_calculation:
-        eta = "Calculating time remaining"
-    elif last_eta < eta and not started_calculation:
-        eta = "Calculating time remaining"
-    else:
-        started_calculation = True
-        if round(eta) < 2:
-            eta = "Almost done"
-        elif eta > 60:
-            eta = "About " + str(round(eta / 60)) + " minute(s) remaining"
-        elif eta > 3600:
-            eta = "About " + str(round(eta / 60 / 60)) + " hours(s) remaining, this may take a while"
-        elif eta > 86400:
-            eta = "About " + str(round(eta / 60 / 60 / 24)) + " day(s) remaining, this may take a while"
-        else:
-            eta = "About " + str(round(eta, 2)) + " seconds(s) remaining"
+    print(num_files, items_left)
 
-    last_eta = average_time * items_left
+    if num_files/total_files < 0.1:
+        eta = "Calculating time remaining"
+    elif round(eta) < 2:
+        eta = "Almost done"
+    elif eta > 60:
+        eta = "About " + str(round(eta / 60)) + " minute(s) remaining"
+    elif eta > 3600:
+        eta = "About " + str(round(eta / 60 / 60)) + " hours(s) remaining, this may take a while"
+    elif eta > 86400:
+        eta = "About " + str(round(eta / 60 / 60 / 24)) + " day(s) remaining, this may take a while"
+    else:
+        eta = "About " + str(round(eta, 2)) + " seconds(s) remaining"
 
     canvas.itemconfig(images_left, text=f"{str(len(image_list))} files left from {str(total_files)}")
 
@@ -462,7 +456,7 @@ def disable_ingest_button(canvas, ingest_name_var, button_1, message):
     canvas.after(1, lambda: disable_ingest_button(canvas, ingest_name_var, button_1, message))
 
 
-def digest(selected_folder=""):
+def digest(selected_folder="/Users/sudesh/Pictures/Digestible Output/Athletics Carnival"):
     global total_files
     global image_list
     global file_names
@@ -478,12 +472,12 @@ def digest(selected_folder=""):
     file_names = []
 
     if "Digested Images" in os.listdir(selected_folder):
-        main('Folder has already been digested, delete the "Digested Images" folder to try again')
+        main('Folder has already been digested, delete the "Delegated Images" folder to try again')
 
     for root, dirs, files in os.walk(selected_folder):
 
         for f in files:
-            if is_media(f) == "image" and not f.startswith("."):
+            if is_media(f) == "image":
                 image_list.append(os.path.join(root, f))
                 file_names.append(f)
     total_files = len(image_list)
@@ -605,7 +599,7 @@ def digest_process(progress, activity_list, colour, exposure, blur, folder):
 
     name = ""
     colour_dominance = "Not tested"
-    exposure_check = "Not tested"
+    exposure_check = "Exposed correctly"
     blurry = False
 
     if file_name in file_names:
@@ -640,8 +634,7 @@ def digest_process(progress, activity_list, colour, exposure, blur, folder):
         if colour.get() == 1 and not reject:
             colour_dominance = digest_functions.check_colour(image_preview)
             if colour_dominance != "Not colour dominant":
-                colour_folder = os.path.join(output, "Colour dominance")
-                output = os.path.join(colour_folder, colour_dominance)
+                output = os.path.join(output, colour_dominance)
     else:
         output = os.path.join(output, "No thumbnail available")
 
