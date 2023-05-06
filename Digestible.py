@@ -26,7 +26,7 @@ window.geometry("800x480")
 window.configure(bg="#1F2124")
 window.resizable(False, False)
 config = configparser.ConfigParser()
-version_number = "Digestible v0.2.1"
+version_number = "Digestible v0.2.2"
 
 image_list = []
 file_names = []
@@ -376,7 +376,13 @@ def ingest_in_progress(drives, body, optics, orientation, ingest_name):
 
     root = os.path.join(str(config["Program"]["default output"]), ingest_name)
 
-    ingest_class = Ingest(body, optics, orientation, root, file_names, activity_list, ingest_name)
+    try:
+        backup_root = os.path.join(str(config["Program"]["backup output"]), ingest_name)
+    except KeyError:
+        backup_root = ""
+        pass
+
+    ingest_class = Ingest(body, optics, orientation, root, backup_root, file_names, activity_list, ingest_name)
 
     window.after(1, lambda: ingest_process(ingest_class, progress, activity_list))
     window.after(10, lambda: time_left(canvas, time_remaining, images_left))

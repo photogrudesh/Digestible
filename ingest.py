@@ -5,13 +5,14 @@ from global_functions import is_media
 
 
 class Ingest:
-    def __init__(self, body, optics, orientation, root, file_names, activity_list, ingest_name):
+    def __init__(self, body, optics, orientation, root, backup_root, file_names, activity_list, ingest_name):
         self.complete_message = ""
         self.body = body
         self.optics = optics
         self.orientation = orientation
         self.item = ""
         self.root = root
+        self.backup_root = backup_root
         self.file_names = file_names
         self.current_file = ""
         self.activity_list = activity_list
@@ -22,7 +23,7 @@ class Ingest:
         current_image = self.item
         name = ""
 
-        output = self.root
+        output = ""
 
         if self.current_file in self.file_names:
             try:
@@ -90,18 +91,38 @@ class Ingest:
             self.activity_list.insert(next_index, f"Skipped {self.current_file}, file already exists at {output}")
             self.activity_list.yview_scroll(1, "unit")
         else:
-            if not os.path.isdir(output):
-                os.makedirs(output)
-
             try:
-                shutil.copy2(current_image, output)
+                main_out = os.path.join(self.root, output)
+
+                if not os.path.isdir(main_out):
+                    os.makedirs(main_out)
+                
+                shutil.copy2(current_image, main_out)
+
+                if name != "":
+                    original_output_file_dir = os.path.join(main_out, self.current_file)
+                    final_dir = os.path.join(main_out, name)
+                    os.rename(original_output_file_dir, final_dir)
             except FileNotFoundError:
                 self.ingest_failed = True
 
-            if name != "":
-                original_output_file_dir = os.path.join(output, self.current_file)
-                final_dir = os.path.join(output, name)
-                os.rename(original_output_file_dir, final_dir)
+            try:
+                backup_out = os.path.join(self.backup_root, output)
+
+                if not os.path.isdir(backup_out):
+                    os.makedirs(backup_out)
+                    
+                shutil.copy2(current_image, backup_out)
+
+                if name != "":
+                    original_backup_file_dir = os.path.join(backup_out, self.current_file)
+                    final_backup_dir = os.path.join(backup_out, name)
+                    os.rename(original_backup_file_dir, final_backup_dir)
+
+            except FileNotFoundError:
+                pass
+
+
 
             if body_name == "Unknown" and lens_name == "Unknown" and orientation_str == "Unknown":
                 message = "Image was not sorted"
