@@ -76,24 +76,21 @@ class Ingest:
                     output = os.path.join(output, orientation_str.replace("/", "").replace("\\", "").replace("*", "").replace( ":", "").replace("<", "").replace(">", "").replace("|", ""))
 
                     if body_name == "Body unknown" and lens_name == "Lens unknown" and orientation_str == "Orientation unknown":
-                        output = os.path.join(self.root, "Unsorted (No image data)")
+                        output = "Unsorted (No image data)"
 
             except FileNotFoundError:
                 self.ingest_failed = True
 
         next_index = self.activity_list.size() + 1
 
-        if os.path.exists(os.path.join(output, name)) and name != "":
+        main_out = os.path.join(self.root, output)
+
+        if os.path.exists(os.path.join(main_out, name)) and name != "":
             self.activity_list.insert(next_index, f"Skipped {self.current_file}, file already exists at {output}")
             self.activity_list.yview_scroll(1, "unit")
 
-        elif os.path.exists(os.path.join(output, self.current_file)):
-            self.activity_list.insert(next_index, f"Skipped {self.current_file}, file already exists at {output}")
-            self.activity_list.yview_scroll(1, "unit")
         else:
             try:
-                main_out = os.path.join(self.root, output)
-
                 if not os.path.isdir(main_out):
                     os.makedirs(main_out)
                 
@@ -121,8 +118,6 @@ class Ingest:
 
             except FileNotFoundError:
                 pass
-
-
 
             if body_name == "Unknown" and lens_name == "Unknown" and orientation_str == "Unknown":
                 message = "Image was not sorted"

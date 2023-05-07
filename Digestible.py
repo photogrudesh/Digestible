@@ -26,7 +26,7 @@ window.geometry("800x480")
 window.configure(bg="#1F2124")
 window.resizable(False, False)
 config = configparser.ConfigParser()
-version_number = "Digestible v0.2.2"
+version_number = "Digestible v0.2.3"
 
 image_list = []
 file_names = []
