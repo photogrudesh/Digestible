@@ -31,7 +31,7 @@ def clear_screen(window):
     for widget in window.winfo_children():
         widget.destroy()
 
-    canvas = tk.Canvas(window, bg="#1F2124", height=480, width=800, bd=0, highlightthickness=0, relief="ridge")
+    canvas = tk.Canvas(window, bg="#FFFFFF", height=700, width=1200, bd=0, highlightthickness=0, relief="ridge")
 
     canvas.place(x=0, y=0)
 
@@ -69,3 +69,9 @@ def collect_inputs():
             pass
 
     return inputs
+
+
+def make_btn_reactive(button_object, hover_colour, default_colour):
+    button_object.bind("<Enter>", func=lambda: button_object.config(background=hover_colour))
+    button_object.bind("<Leave>", func=lambda: button_object.config(background=default_colour))
+

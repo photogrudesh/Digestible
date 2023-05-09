@@ -4,6 +4,7 @@ import os
 import shutil
 import time
 import tkinter as tk
+import random
 
 import requests as requests
 
@@ -22,11 +23,11 @@ from tkinter import ttk
 from tkinter import filedialog
 
 window = tk.Tk()
-window.geometry("800x480")
-window.configure(bg="#1F2124")
+window.geometry("1200x700")
+window.configure(bg="#FFFFFF")
 window.resizable(False, False)
 config = configparser.ConfigParser()
-version_number = "Digestible v0.2.3"
+version_number = "Digestible v0.3.0"
 
 image_list = []
 file_names = []
@@ -42,24 +43,36 @@ aborted = False
 def settings():
     canvas = clear_screen(window)
 
-    window.title("Digestible · Options")
+    window.title("Digestible · Settings")
 
-    canvas.create_text(42.0, 37.0, anchor="nw", text="Options", fill="#FFFFFF", font=("Roboto Mono", 36 * -1))
+    banner_text = "Settings"
 
-    canvas.create_rectangle(217.0, 58.0, 551.0, 61.0, fill="#2C2E2F", outline="")
+    banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets(canvas)
 
-    canvas.create_text(43, 110, text="Output Preferences", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 15))
+    canvas.create_image(250, 0, image=banner, anchor="nw")
+    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Roboto Mono", 26 * -1))
+    canvas.create_rectangle(0, 0, 250, 700, fill="#F5F5F5", outline="")
+    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Roboto Mono", 26 * -1))
+    tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=135.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=170.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=205.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=603.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0, command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=638.0, width=249.0, height=35.0)
+    # SIDEBAR
+
+    canvas.create_text(300, 140, text="Output Preferences", anchor="nw", fill="#37352F", font=("Roboto Mono", 15))
 
     add_default_output = tk.Button(text="Add an output directory", fg="#000000", bg="#FFFFFF", command=lambda: add_dir(default=True))
-    add_default_output.place(x=41, y=150)
+    add_default_output.place(x=300, y=180)
 
     add_backup_output = tk.Button(text="Add a backup directory", fg="#000000", bg="#FFFFFF", command=lambda: add_dir(default=False))
-    add_backup_output.place(x=220, y=150)
+    add_backup_output.place(x=450, y=180)
 
-    canvas.create_text(42, 200, text="This is where your ingests will go", anchor="nw", fill="#FFFFFF",
+    canvas.create_text(300, 230, text="This is where your ingests will go", anchor="nw", fill="#37352F",
                        font=("Roboto Mono", 14 * -1))
 
-    canvas.create_text(43, 270, text="Saved Editors", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 15))
+    canvas.create_text(300, 300, text="Saved Editors", anchor="nw", fill="#37352F", font=("Roboto Mono", 15))
 
     if not config.has_option("Program", "saved editors"):
         config["Program"]["saved editors"] = ""
@@ -75,10 +88,8 @@ def settings():
     while len(editors) < 6:
         editors.append("Open slot")
 
-    canvas.create_text(42, 300, text=f"{str(editors).replace('[', '').replace(']', '')}", anchor="nw", fill="#FFFFFF",
+    canvas.create_text(300, 330, text=f"{str(editors).replace('[', '').replace(']', '')}", anchor="nw", fill="#37352F",
                        font=("Roboto Mono", 11))
-
-    canvas.create_text(42, 350, text=f"Edit this list:", anchor="nw", fill="#FFFFFF", font=("Roboto Mono", 14))
 
     while "Open slot" in editors:
         editors.remove("Open slot")
@@ -89,22 +100,18 @@ def settings():
         placeholder_text = str(editors).replace('[', '').replace(']', '').replace("'", "")
 
     new_editors_var = tk.StringVar()
-    editors_to_add = tk.Entry(window, textvariable=new_editors_var, font=("Roboto Mono", 10), width=50)
+    editors_to_add = tk.Entry(window, textvariable=new_editors_var, font=("Roboto Mono", 14), width=45)
     editors_to_add.insert(0, f"{placeholder_text}")
-    editors_to_add.tk_setPalette(background="#1F2124")
+    editors_to_add.tk_setPalette(background="#FFFFFF")
     editors_to_add.focus_set()
-    editors_to_add.place(x=210.0, y=350)
+    editors_to_add.place(x=300.0, y=370)
 
-    canvas.create_text(42, 380, text=f"Alter your saved editors by adding names separated by commas.", anchor="nw",
-                       fill="#FFFFFF", font=("Roboto Mono", 12))
+    canvas.create_text(300, 410, text=f"Alter your saved editors by adding names separated by commas.", anchor="nw",
+                       fill="#37352F", font=("Roboto Mono", 12))
 
-    button_image_2 = tk.PhotoImage(file=asset_relative_path("cancel.png"))
-    button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0,
-                         command=lambda: main(), relief="flat")
-    button_2.place(x=695.0, y=421.0, width=64.0, height=25.0)
-
-    update_editors = tk.Button(text="Update", command=lambda: add_editors(new_editors_var), fg="#000000", bg="#FFFFFF")
-    update_editors.place(x=665.0, y=344)
+    update_image = tk.PhotoImage(file=asset_relative_path("update_btn.png"))
+    update_editors = tk.Button(image=update_image, command=lambda: add_editors(new_editors_var), borderwidth=0, highlightthickness=0, relief="flat", bg="#F7F9F9", anchor="w")
+    update_editors.place(x=800.0, y=367)
 
     window.mainloop()
 
@@ -132,7 +139,8 @@ def add_editors(editor_string):
     editors = []
 
     for i in editor_string.get().split(","):
-        if len(editors) < 6 and i.strip().replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", "") not in editors:
+        name = i.strip().replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", "")
+        if len(editors) < 6 and name not in editors and name != "Save some editors":
             editors.append(i.strip().replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", ""))
 
     for name in editors:
@@ -144,40 +152,50 @@ def add_editors(editor_string):
     config["Program"]["saved editors"] = new_string
     write(config)
 
-    main("Updated saved editors")
+    settings()
 
 
-def inventory():
-    # canvas = clear_screen(window)
-    main("Inventory does not exist\n will likely never exist.")
+def get_sidebar_assets(canvas):
+    banner = tk.PhotoImage(file=asset_relative_path("banner_g.png"))
 
-    window.title("Digestible · Inventory")
+    button_image_home = tk.PhotoImage(file=asset_relative_path("home_btn.png"))
 
-    cancel_image = tk.PhotoImage(file=asset_relative_path("cancel.png"))
-    cancel_button = tk.Button(image=cancel_image, borderwidth=0, highlightthickness=0,
-                              command=lambda: main(), relief="flat")
-    cancel_button.place(x=695.0, y=421.0, width=64.0, height=25.0)
+    button_image_ingest = tk.PhotoImage(file=asset_relative_path("ingest_btn.png"))
 
-    window.mainloop()
+    button_image_delegate = tk.PhotoImage(file=asset_relative_path("delegate_btn.png"))
+
+    button_image_digest = tk.PhotoImage(file=asset_relative_path("digest_btn.png"))
+
+    button_image_help = tk.PhotoImage(file=asset_relative_path("help_btn.png"))
+
+    button_image_settings = tk.PhotoImage(file=asset_relative_path("settings_btn.png"))
+
+    return banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings
 
 
 def help_menu():
     canvas = clear_screen(window)
 
     window.title("Digestible · Help")
+    banner_text = "Help"
 
-    canvas.create_text(42.0, 37.0, anchor="nw", text="Help", fill="#FFFFFF", font=("Roboto Mono", 36 * -1))
+    banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets(canvas)
 
-    canvas.create_rectangle(157.0, 58.0, 501.0, 61.0, fill="#2C2E2F", outline="")
+    canvas.create_image(250, 0, image=banner, anchor="nw")
+    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Roboto Mono", 26 * -1))
+    canvas.create_rectangle(0, 0, 250, 700, fill="#F5F5F5", outline="")
+    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Roboto Mono", 26 * -1))
+    tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=135.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=170.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=205.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=603.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0, command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=638.0, width=249.0, height=35.0)
+    # SIDEBAR
 
-    canvas.create_text(41, 100, anchor="nw",
+    canvas.create_text(725, 140, anchor="n",
                        text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nWhen you get home after a shoot, Ingest mode makes it easy to process the files from your camera (cards under 100 GB). Digestible automatically sorts images by camera body, lens used, and orientation of the image so you don't have to.\n\nAfter you've ingested your images, it's time to start culling! Digest mode automatically separates images based on how usable they are by analysing exposure and blurriness, so you can quickly identify the images that are worth keeping.\n\nOnce you've sorted your images, it's time to delegate them to your team for post-production. Delegate mode automatically splits the sorted images between editors evenly so editing can become as soon as possible.",
-                       width=720, font=("Roboto Mono", 10), fill="#FFFFFF")
-
-    cancel_image = tk.PhotoImage(file=asset_relative_path("cancel.png"))
-    cancel_button = tk.Button(image=cancel_image, borderwidth=0, highlightthickness=0,
-                              command=lambda: main(), relief="flat")
-    cancel_button.place(x=695.0, y=421.0, width=64.0, height=25.0)
+                       width=800, font=("Roboto Mono", 12), fill="#37352F")
 
     window.mainloop()
 
@@ -216,8 +234,21 @@ def ingest():
     window.title("Digestible · Ingest")
 
     canvas = clear_screen(window)
+    banner_text = "Ingest"
 
-    canvas.create_text(400.0, 37.0, anchor="n", text="Ingest\n", fill="#FFFFFF", font=("Roboto Mono", 36 * -1))
+    banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets(canvas)
+
+    canvas.create_image(250, 0, image=banner, anchor="nw")
+    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Roboto Mono", 26 * -1))
+    canvas.create_rectangle(0, 0, 250, 700, fill="#F5F5F5", outline="")
+    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Roboto Mono", 26 * -1))
+    tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=135.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=170.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=205.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=603.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0, command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=638.0, width=249.0, height=35.0)
+    # SIDEBAR
 
     image_list = []
     file_names = []
@@ -259,72 +290,63 @@ def ingest():
     if len(image_list) == 0:
         main("No files to ingest")
 
-    canvas.create_rectangle(145.0, 58.0, 281.0, 61.0, fill="#2C2E2F", outline="")
-
-    canvas.create_rectangle(516.0, 58.0, 651.0, 61.0, fill="#2C2E2F", outline="")
-
-    canvas.create_text(41.0, 395.0, anchor="nw", text="Sort By:", fill="#FFFFFF", font=("Roboto Mono", 15 * -1))
+    canvas.create_text(300.0, 650.0, anchor="nw", text="Sort By:", fill="#37352F", font=("Roboto Mono", 15 * -1))
 
     body = tk.Checkbutton(window, text="Body Type", variable=sort_body)
-    body.tk_setPalette(background="#1F2124", foreground="white", selectcolor="black")
-    body.place(x=40, y=425.0)
+    body.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
+    body.place(x=380, y=650.0)
 
     optics = tk.Checkbutton(window, text="Optics", variable=sort_optics)
-    optics.tk_setPalette(background="#1F2124", foreground="white", selectcolor="black")
-    optics.place(x=133.0, y=425.0)
+    optics.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
+    optics.place(x=473.0, y=650.0)
 
     orient = tk.Checkbutton(window, text="Orientation", variable=sort_orientation)
-    orient.tk_setPalette(background="#1F2124", foreground="white", selectcolor="black")
-    orient.place(x=201.0, y=425.0)
+    orient.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
+    orient.place(x=541.0, y=650.0)
 
     current_time = datetime.datetime.now()
     default_name = current_time.strftime("%d-%m-%Y-%H-%M-%S")
 
-    canvas.create_text(315, 428, text="Ingest Name:", anchor="nw", font=("Roboto Mono", 14 * -1), fill="#FFFFFF")
+    canvas.create_text(655, 653, text="Ingest Name:", anchor="nw", font=("Roboto Mono", 14 * -1), fill="#37352F")
 
     ingest_name_var = tk.StringVar()
-    ingest_name = tk.Entry(window, textvariable=ingest_name_var, font=("Roboto Mono", 10), width=20)
+    ingest_name = tk.Entry(window, textvariable=ingest_name_var, font=("Roboto Mono", 10), width=30)
     ingest_name.insert(0, f"{default_name}")
-    ingest_name.tk_setPalette(background="#1F2124")
+    ingest_name.tk_setPalette(background="#FFFFFF")
     ingest_name.focus_set()
-    ingest_name.place(x=410.0, y=426)
+    ingest_name.place(x=760.0, y=651)
 
-    button_image_1 = tk.PhotoImage(file=asset_relative_path("ingest_start.png"))
+    button_image_1 = tk.PhotoImage(file=asset_relative_path("begin_btn.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0,
                          command=lambda: ingest_in_progress(drives, sort_body, sort_optics, sort_orientation,
                                                             ingest_name_var.get().strip()), relief="flat")
-    button_1.place(x=692.0, y=417.0, width=72.0, height=36.0)
+    button_1.place(x=1020.0, y=642.0, width=160.0, height=35.0)
 
-    message = canvas.create_text(400.0, 345.0, anchor="n", text="Name the ingest below to start", fill="#FFFFFF",
-                                 font=("Roboto Mono", 14 * -1), width=750)
+    message = canvas.create_text(725.0, 580.0, anchor="n", text="Name the ingest below to start", fill="#37352F",
+                                 font=("Roboto Mono", 15 * -1), width=850, justify="center")
 
     disable_ingest_button(canvas, ingest_name_var, button_1, message)
 
-    button_image_2 = tk.PhotoImage(file=asset_relative_path("cancel.png"))
-    button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0,
-                         command=lambda: main("Cancelled Ingest"), relief="flat")
-    button_2.place(x=611.0, y=425.0, width=64.0, height=25.0)
-
     extra_drives = len(inputs) - 3
     if extra_drives > 0:
-        canvas.create_text(400.0, 250.0, anchor="n",
+        canvas.create_text(725.0, 250.0, anchor="n",
                            text=f"{extra_drive_files} files to ingest from {extra_drives} other drive(s)",
-                           fill="#FFFFFF", font=("Roboto Mono", 12 * -1), justify="center")
+                           fill="#37352F", font=("Roboto Mono", 18 * -1), justify="center")
 
     if len(image_list) > 1000:
-        canvas.create_text(400.0, 307.0, anchor="n", text=f"This may take a while, {len(image_list)} images to ingest",
-                           fill="#FF0000", font=("Roboto Mono", 12 * -1), justify="center")
+        canvas.create_text(725.0, 307.0, anchor="n", text=f"This may take a while, {len(image_list)} images to ingest",
+                           fill="#FF0000", font=("Roboto Mono", 18 * -1), justify="center")
     else:
-        canvas.create_text(400.0, 297.0, anchor="n",
+        canvas.create_text(725.0, 297.0, anchor="n",
                            text=f"{len(image_list)} images to ingest\n(Ignoring drives over 100 GB in size)",
-                           fill="#FFFFFF", font=("Roboto Mono", 12 * -1), justify="center")
+                           fill="#37352F", font=("Roboto Mono", 18 * -1), justify="center")
 
-    canvas.create_text(150.0, 150.0, anchor="n", text=inputs[0], fill="#FFFFFF", font=("Roboto Mono", 16 * -1))
-    canvas.create_text(400.0, 150.0, anchor="n", text=inputs[1], fill="#FFFFFF", font=("Roboto Mono", 16 * -1))
-    canvas.create_text(650.0, 150.0, anchor="n", text=inputs[2], fill="#FFFFFF", font=("Roboto Mono", 16 * -1))
-    canvas.create_text(150.0, 184.0, anchor="n", text=drive_files[0], fill="#FFFFFF", font=("Roboto Mono", 15 * -1))
-    canvas.create_text(400.0, 184.0, anchor="n", text=drive_files[1], fill="#FFFFFF", font=("Roboto Mono", 15 * -1))
-    canvas.create_text(650.0, 184.0, anchor="n", text=drive_files[2], fill="#FFFFFF", font=("Roboto Mono", 15 * -1))
+    canvas.create_text(500.0, 150.0, anchor="n", text=inputs[0], fill="#37352F", font=("Roboto Mono", 16 * -1))
+    canvas.create_text(725.0, 150.0, anchor="n", text=inputs[1], fill="#37352F", font=("Roboto Mono", 16 * -1))
+    canvas.create_text(950.0, 150.0, anchor="n", text=inputs[2], fill="#37352F", font=("Roboto Mono", 16 * -1))
+    canvas.create_text(500.0, 184.0, anchor="n", text=drive_files[0], fill="#37352F", font=("Roboto Mono", 15 * -1))
+    canvas.create_text(725.0, 184.0, anchor="n", text=drive_files[1], fill="#37352F", font=("Roboto Mono", 15 * -1))
+    canvas.create_text(950.0, 184.0, anchor="n", text=drive_files[2], fill="#37352F", font=("Roboto Mono", 15 * -1))
 
     window.mainloop()
 
@@ -341,38 +363,32 @@ def ingest_in_progress(drives, body, optics, orientation, ingest_name):
 
     canvas = clear_screen(window)
 
-    canvas.create_text(400.0, 37.0, anchor="n", text="Ingesting\n", fill="#FFFFFF", font=("Roboto Mono", 36 * -1))
+    canvas.create_text(50.0, 37.0, anchor="nw", text="Ingest in progress\n", fill="#37352F", font=("Roboto Mono", 26 * -1))
 
-    canvas.create_rectangle(145.0, 58.0, 271.0, 61.0, fill="#2C2E2F", outline="")
-    canvas.create_rectangle(526.0, 58.0, 651.0, 61.0, fill="#2C2E2F", outline="")
-
-    button_image_1 = tk.PhotoImage(file=asset_relative_path("abort.png"))
+    button_image_1 = tk.PhotoImage(file=asset_relative_path("abort_btn.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0,
                          command=lambda: main("Ingest Aborted"),
                          relief="flat")
-    button_1.place(x=704.0, y=421.0, width=59.0, height=31.0)
-
-    entry_image_1 = tk.PhotoImage(file=asset_relative_path("ingesting_entry.png"))
-    canvas.create_image(399.5, 282.0, image=entry_image_1)
+    button_1.place(x=1050.0, y=645.0, width=130.0, height=35.0)
 
     if drives == 1:
-        canvas.create_text(400.0, 108.0, anchor="n",
-                           text=f"Ingesting {str(total_files)} files from {str(drives)} drive", fill="#FFFFFF",
+        canvas.create_text(1000.0, 108.0, anchor="n",
+                           text=f"Ingesting {str(total_files)} files from {str(drives)} drive", fill="#37352F",
                            font=("Roboto Mono", 16 * -1))
     else:
-        canvas.create_text(400.0, 108.0, anchor="n",
-                           text=f"Ingesting {str(total_files)} files from {str(drives)} drives", fill="#FFFFFF",
+        canvas.create_text(1000.0, 108.0, anchor="n",
+                           text=f"Ingesting {str(total_files)} files from {str(drives)} drives", fill="#37352F",
                            font=("Roboto Mono", 16 * -1))
 
-    images_left = canvas.create_text(400.0, 145.0, anchor="n", text="", fill="#FFFFFF", font=("Roboto Mono", 15 * -1))
+    images_left = canvas.create_text(1000.0, 145.0, anchor="n", text="", fill="#37352F", font=("Roboto Mono", 15 * -1))
 
-    progress = ttk.Progressbar(window, orient='horizontal', mode='determinate', length=718)
-    progress.place(x=41, y=375)
+    progress = ttk.Progressbar(window, orient='horizontal', mode='determinate', length=800)
+    progress.place(x=41, y=645)
 
-    time_remaining = canvas.create_text(41.0, 426.0, anchor="nw", text="", fill="#FFFFFF",
+    time_remaining = canvas.create_text(1000.0, 200.0, anchor="n", text="", fill="#37352F",
                                         font=("Roboto Mono", 14 * -1))
     activity_list = tk.Listbox(font=("Roboto Mono", 13))
-    activity_list.place(x=41.0, y=187.0, width=717.0, height=188.0)
+    activity_list.place(x=41.0, y=120.0, width=800.0, height=480.0)
 
     root = os.path.join(str(config["Program"]["default output"]), ingest_name)
 
@@ -387,7 +403,7 @@ def ingest_in_progress(drives, body, optics, orientation, ingest_name):
     window.after(1, lambda: ingest_process(ingest_class, progress, activity_list))
     window.after(10, lambda: time_left(canvas, time_remaining, images_left))
 
-    window.mainloop()
+    window.mainloop()  # Todo alter design to make more visually appealing
 
 
 def ingest_process(ingest_class, progress, activity_list):
@@ -491,6 +507,22 @@ def digest(selected_folder=""):
 
     canvas = clear_screen(window)
 
+    banner_text = "Digest"
+
+    banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets(canvas)
+
+    canvas.create_image(250, 0, image=banner, anchor="nw")
+    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Roboto Mono", 26 * -1))
+    canvas.create_rectangle(0, 0, 250, 700, fill="#F5F5F5", outline="")
+    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Roboto Mono", 26 * -1))
+    tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=135.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=170.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=205.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=603.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0, command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=638.0, width=249.0, height=35.0)
+    # SIDEBAR
+
     if len(image_list) > 500:
         canvas.create_text(400.0, 108.0, anchor="n", text=f"{str(total_files)} files to digest. This may take a while",
                            fill="#FFFFFF", font=("Roboto Mono", 16 * -1))
@@ -505,15 +537,15 @@ def digest(selected_folder=""):
     colour, exposure, blur = tk.IntVar(), tk.IntVar(), tk.IntVar()
 
     e1 = tk.Checkbutton(window, text="Colour dominance", variable=colour)
-    e1.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
+    e1.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#000000")
     e1.place(x=48.0, y=200.0)
 
     e3 = tk.Checkbutton(window, text="Blur detection", variable=blur)
-    e3.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
+    e3.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#000000")
     e3.place(x=48.0, y=230.0)
 
     e2 = tk.Checkbutton(window, text="Exposure", variable=exposure)
-    e2.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
+    e2.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#000000")
     e2.place(x=48.0, y=260.0)
 
     canvas.create_rectangle(145.0, 58.0, 281.0, 61.0, fill="#2C2E2F", outline="")
@@ -523,17 +555,12 @@ def digest(selected_folder=""):
     canvas.create_text(35.0, 427.0, anchor="nw", text=f"Digesting from: {selected_folder.split('/')[-1]}", fill="#FFFFFF",
                        font=("Roboto Mono", 14 * -1))
 
-    button_image_1 = tk.PhotoImage(file=asset_relative_path("digest_start.png"))
+    button_image_1 = tk.PhotoImage(file=asset_relative_path("begin_btn.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0,
                          command=lambda: digest_in_progress(colour, exposure, blur, selected_folder),
                          relief="flat")
 
-    button_1.place(x=683.0, y=418.0, width=80.0, height=35.0)
-
-    button_image_2 = tk.PhotoImage(file=asset_relative_path("cancel.png"))
-    button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0,
-                         command=lambda: main(), relief="flat")
-    button_2.place(x=600.0, y=424.0, width=64.0, height=25.0)
+    button_1.place(x=1000.0, y=630.0, width=80.0, height=35.0)
 
     window.mainloop()
 
@@ -569,8 +596,8 @@ def digest_in_progress(colour, exposure, blur, folder):
     canvas.create_text(510.0, 271.0, anchor="nw", text="Current image is:", fill="#FFFFFF",
                        font=("Roboto Mono", 12 * -1))
 
-    button_image_1 = tk.PhotoImage(file=asset_relative_path("abort.png"))
-    button_1 = tk.Button(image=button_image_1, borderwidth=0, command=lambda: abort(),
+    button_image_1 = tk.PhotoImage(file=asset_relative_path("abort_btn.png"))
+    button_1 = tk.Button(image=button_image_1, borderwidth=0, command=lambda: main("Aborted Digest"),
                          highlightthickness=0,
                          relief="flat")
     button_1.place(x=696.0, y=416.0, width=70.0, height=39.0)
@@ -670,11 +697,6 @@ def digest_process(progress, activity_list, colour, exposure, blur, folder):
         main(f"Digested {total_files} images")
 
 
-def abort():
-    global aborted
-    aborted = True
-
-
 def delegate(selected_folder=""):
     global total_files
     global image_list
@@ -710,25 +732,36 @@ def delegate(selected_folder=""):
 
     canvas = clear_screen(window)
 
-    canvas.create_text(400.0, 37.0, anchor="n", text="Delegate", fill="#FFFFFF", font=("Roboto Mono", 36 * -1))
+    banner_text = "Delegate"
 
-    canvas.create_rectangle(145.0, 58.0, 281.0, 61.0, fill="#2C2E2F", outline="")
+    banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets(
+        canvas)
 
-    canvas.create_rectangle(516.0, 58.0, 651.0, 61.0, fill="#2C2E2F", outline="")
+    canvas.create_image(250, 0, image=banner, anchor="nw")
+    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Roboto Mono", 26 * -1))
+    canvas.create_rectangle(0, 0, 250, 700, fill="#F5F5F5", outline="")
+    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Roboto Mono", 26 * -1))
+    tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=135.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=170.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=205.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=603.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0, command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=638.0, width=249.0, height=35.0)
+    # SIDEBAR
 
-    canvas.create_text(35.0, 432.0, anchor="nw", text=f"Delegating from: {selected_folder.split('/')[-1]}", fill="#FFFFFF",
+    canvas.create_text(300.0, 650.0, anchor="nw", text=f"Delegating from: {selected_folder.split('/')[-1]}", fill="#37352F",
                        font=("Roboto Mono", 14 * -1))
 
-    canvas.create_text(45.0, 360.0, anchor="nw",
-                       text="Enter the names of up to 20 additional editors separated by commas.", fill="#FFFFFF",
+    canvas.create_text(300.0, 360.0, anchor="nw",
+                       text="Enter the names of up to 20 additional editors separated by commas.", fill="#37352F",
                        font=("Roboto Mono", 14 * -1))
 
-    canvas.create_text(370.0, 392.0, anchor="nw", text="Use names under 20 characters long", fill="#FFFFFF",
+    canvas.create_text(620.0, 392.0, anchor="nw", text="Use names under 20 characters long", fill="#37352F",
                        font=("Roboto Mono", 14 * -1))
 
-    images_per_person_message = canvas.create_text(400.0, 116.0, anchor="n",
+    images_per_person_message = canvas.create_text(725.0, 116.0, anchor="n",
                                                    text=f"Total Images: {total_files}  |  Images per person: ",
-                                                   fill="#FFFFFF", font=("Roboto Mono", 14 * -1))
+                                                   fill="#37352F", font=("Roboto Mono", 14 * -1))
 
     editors = config["Program"]["saved editors"].split("*")
     if "" in editors:
@@ -740,48 +773,43 @@ def delegate(selected_folder=""):
     d2e1, d2e2, d2e3, d2e4, d2e5, d2e6 = tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar()
 
     e1 = tk.Checkbutton(window, text=editors[0], variable=d2e1)
-    e1.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
+    e1.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
     e1.place(x=470.0, y=160.0)
 
     e2 = tk.Checkbutton(window, text=editors[1], variable=d2e2)
-    e2.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
+    e2.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
     e2.place(x=470.0, y=190.0)
 
     e3 = tk.Checkbutton(window, text=editors[2], variable=d2e3)
-    e3.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
+    e3.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
     e3.place(x=470.0, y=220.0)
 
     e4 = tk.Checkbutton(window, text=editors[3], variable=d2e4)
-    e4.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
+    e4.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
     e4.place(x=470.0, y=250.0)
 
     e5 = tk.Checkbutton(window, text=editors[4], variable=d2e5)
-    e5.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
+    e5.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
     e5.place(x=470.0, y=280.0)
 
     e6 = tk.Checkbutton(window, text=editors[5], variable=d2e6)
-    e6.tk_setPalette(background="#1F2124", foreground="white", selectcolor="#000000")
+    e6.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
     e6.place(x=470.0, y=310.0)
 
     editor_names_var = tk.StringVar()
     editor_names = tk.Entry(window, textvariable=editor_names_var, font=("Roboto Mono", 10), width=38)
     editor_names.insert(0, f"Type names here")
-    editor_names.tk_setPalette(background="#1F2124")
+    editor_names.tk_setPalette(background="#FFFFFF")
     editor_names.focus_set()
     editor_names.place(x=45.0, y=390)
 
     delegating_to_message = canvas.create_text(41, 160, text=f"Delegating to nobody", anchor="nw", width=410,
-                                               fill="#FFFFFF")
+                                               fill="#37352F")
 
-    button_image_1 = tk.PhotoImage(file=asset_relative_path("delegate_start.png"))
+    button_image_1 = tk.PhotoImage(file=asset_relative_path("begin_btn.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0,
                          command=lambda: delegate_in_progress(selected_folder), relief="flat")
-    button_1.place(x=684.0, y=428.0, width=82.0, height=25.0)
-
-    button_image_2 = tk.PhotoImage(file=asset_relative_path("cancel.png"))
-    button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0,
-                         command=lambda: main("Delegation cancelled"), relief="flat")
-    button_2.place(x=611.0, y=429.0, width=64.0, height=25.0)
+    button_1.place(x=1040.0, y=640.0, width=125.0, height=35.0)
 
     canvas.after(20, lambda: check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4, d2e5, d2e6,
                                                     editors, editor_names_var, images_per_person_message, button_1))
@@ -904,7 +932,7 @@ def delegate_in_progress(selected_folder):
     canvas.after(5, lambda: delegate_process(canvas, images_left, progress, activity_list))
     window.after(10, lambda: time_left(canvas, time_remaining, images_left))
 
-    button_image_1 = tk.PhotoImage(file=asset_relative_path("abort.png"))
+    button_image_1 = tk.PhotoImage(file=asset_relative_path("abort_btn.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0,
                          command=lambda: main("Aborted delegation"), relief="flat")
     button_1.place(x=699.0, y=422.0, width=70.0, height=39.0)
@@ -953,7 +981,10 @@ def main(message=""):
 
     window.title("Digestible")
 
-    welcome_message = canvas.create_text(747.0, 52.0, anchor="ne", text="Welcome to Digestible 👋", fill="#FFFFFF", font=("Roboto Mono", 14 * -1))
+    wallpaper = tk.PhotoImage(file=asset_relative_path("main_wp.png"))
+    canvas.create_image(250, 0, image=wallpaper, anchor="nw")
+
+    welcome_message = canvas.create_text(1160.0, 45.0, anchor="ne", text="Welcome to Digestible 👋", fill="#37352F", font=("Roboto Mono", 14 * -1))
 
     try:
         response = requests.get("https://api.github.com/repos/photogrudesh/digestible/releases/latest", timeout=3)
@@ -977,48 +1008,20 @@ def main(message=""):
     if message:
         window.after(5000, lambda: canvas.itemconfig(change_message, text=""))
 
-    canvas.create_text(90.0, 37.0, anchor="nw", text="Digestible", fill="#FFFFFF", font=("Roboto Mono", 36 * -1))
-
-    change_message = canvas.create_text(400, 150, anchor="n", justify="center", text=message, fill="#FFFFFF",
+    change_message = canvas.create_text(290, 650, anchor="nw", justify="center", text=message, fill="#37352F",
                                         font=("Roboto Mono", 15 * -1))
 
-    logo = tk.PhotoImage(file=asset_relative_path("icon.png"))
-    canvas.create_image(60.0, 59.0, image=logo)
+    banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets(canvas)
 
-    button_image_help = tk.PhotoImage(file=asset_relative_path("main_help.png"))
-    help_btn = tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0,
-                         command=lambda: help_menu(), relief="flat")
-    help_btn.place(x=42.0, y=421.0, width=51.0, height=25.0)
-
-    button_image_settings = tk.PhotoImage(file=asset_relative_path("main_settings.png"))
-    settings_btn = tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0,
-                             command=lambda: settings(), relief="flat")
-    settings_btn.place(x=678.0, y=421.0, width=81.0, height=24.0)
-
-    button_image_inventory = tk.PhotoImage(file=asset_relative_path("main_inv.png"))
-    inventory_btn = tk.Button(image=button_image_inventory, borderwidth=0, highlightthickness=0,
-                              command=lambda: inventory(), relief="flat")
-    inventory_btn.place(x=354.0, y=419.0, width=92.0, height=28.0)
-
-    button_image_ingest = tk.PhotoImage(file=asset_relative_path("main_ingest.png"))
-    ingest_btn = tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0,
-                           command=lambda: ingest(), relief="flat")
-    ingest_btn.place(x=101.0, y=219.0, width=124.0, height=42.0)
-
-    button_image_delegate = tk.PhotoImage(file=asset_relative_path("main_delegate.png"))
-    delegate_btn = tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0,
-                             command=lambda: delegate(), relief="flat")
-    delegate_btn.place(x=568.0, y=219.0, width=138.0, height=42.0)
-
-    button_image_digest = tk.PhotoImage(file=asset_relative_path("main_digest.png"))
-    digest_btn = tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0,
-                           command=lambda: digest(), relief="flat")
-    digest_btn.place(x=338.0, y=219.0, width=124.0, height=42.0)
-
-    canvas.create_rectangle(42.0, 237.0, 96.0, 240.0, fill="#2C2E2F", outline="")
-    canvas.create_rectangle(229.0, 237.0, 328.0, 240.0, fill="#2C2E2F", outline="")
-    canvas.create_rectangle(467.0, 237.0, 551.0, 240.0, fill="#2C2E2F", outline="")
-    canvas.create_rectangle(716.0, 237.0, 754.0, 240.0, fill="#2C2E2F", outline="")
+    canvas.create_rectangle(0, 0, 250, 700, fill="#F5F5F5", outline="")
+    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Roboto Mono", 26 * -1))
+    tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=135.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=170.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=205.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=603.0, width=249.0, height=35.0)
+    tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0, command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=638.0, width=249.0, height=35.0)
+    # SIDEBAR
 
     window.mainloop()
 
