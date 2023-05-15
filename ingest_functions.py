@@ -80,9 +80,6 @@ def ingest_image(activity_list, body, optics, orientation, current_image, root, 
             try:
                 backup_out = os.path.join(backup_root, output)
 
-                if not os.path.isdir(backup_out):
-                    os.makedirs(backup_out)
-
                 shutil.copy2(current_image, backup_out)
 
                 if name != "":

@@ -39,10 +39,10 @@ def clear_screen(window):
 
 
 def asset_relative_path(path):
-    # root_path = os.path.join(environment.get_main_path(), "assets")
-    # full_path = os.path.join(root_path, path)
+    root_path = os.path.join(environment.get_main_path(), "assets")
+    full_path = os.path.join(root_path, path)
 
-    full_path = os.path.join(environment.get_main_path(), path)
+    # full_path = os.path.join(environment.get_main_path(), path)
 
     return full_path
 

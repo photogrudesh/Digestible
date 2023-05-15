@@ -26,7 +26,7 @@ window.iconbitmap(asset_relative_path("Digestible Icon.ico"))
 window.configure(bg="#FFFFFF")
 window.resizable(False, False)
 config = configparser.ConfigParser()
-version_number = "Digestible v0.3.0"
+version_number = "Digestible v0.3.1"
 
 image_list = []
 file_names = []
@@ -393,6 +393,8 @@ def digest(selected_folder=""):
     global image_list
     global file_names
 
+    window.title("Digestible · Digest")
+
     if selected_folder == "":
         selected_folder = tk.filedialog.askdirectory()
         if selected_folder != "":
@@ -415,7 +417,7 @@ def digest(selected_folder=""):
     total_files = len(image_list)
 
     if len(image_list) == 0:
-        main("No files to delegate")
+        main("No files to digest")
 
     canvas = clear_screen(window)
 
@@ -701,11 +703,21 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
             file_name = current_file
 
             if current_file in file_names:
-                file = open(image, 'rb')
-                image_name = current_file.split(".")[0]
-                extension = current_file.split(".")[-1]
-                tags = exifread.process_file(file, stop_tag='LensModel', details=False)
-                file_name = image_name + " " + str(tags["Image DateTime"]).replace(":", "-") + "." + extension
+                try:
+                    file = open(image, 'rb')
+                    image_name = current_file.split(".")[0]
+                    extension = current_file.split(".")[-1]
+
+                    try:
+                        tags = exifread.process_file(file, stop_tag='LensModel', details=False)
+                        name = image_name + " " + str(tags["Image DateTime"]).replace(":", "-") + "." + extension
+                    except KeyError:
+                        current_time = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+
+                        name = image_name + " " + str(current_time) + " duplicate " + "." + extension
+
+                except FileNotFoundError:
+                    ingest_failed = True
 
             editor_output = os.path.join(output, delegating_to[delegating_to_editor])
 
@@ -785,8 +797,15 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
                     file = open(current_image, 'rb')
                     image_name = current_file.split(".")[0]
                     extension = current_file.split(".")[-1]
-                    tags = exifread.process_file(file, stop_tag='LensModel', details=False)
-                    name = image_name + " " + str(tags["Image DateTime"]).replace(":", "-") + "." + extension
+
+                    try:
+                        tags = exifread.process_file(file, stop_tag='LensModel', details=False)
+                        name = image_name + " " + str(tags["Image DateTime"]).replace(":", "-") + "." + extension
+                    except KeyError:
+                        current_time = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+
+                        name = image_name + " " + str(current_time) + " duplicate " + "." + extension
+
                 except FileNotFoundError:
                     ingest_failed = True
 
@@ -817,8 +836,8 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
 
             name = ""
             colour_dominance = "Not tested"
-            exposure_check = "Exposed correctly"
-            blurry = False
+            exposure_check = "Unknown"
+            blurry = "Unknown"
 
             if file_name in file_names:
                 try:
@@ -844,16 +863,21 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
                     elif exposure_check == "Overexposed":
                         output = os.path.join(os.path.join(output, "Rejects"), "Overexposed")
                         reject = True
+                    elif exposure_check == "Exposed Correctly":
+                        pass
 
                 if blur.get() == 1:
-                    if digest_functions.blur_detect(image_preview):
+                    blurry = digest_functions.blur_detect(image_preview)
+                    if blurry and not reject:
                         output = os.path.join(os.path.join(output, "Rejects"), "Blurry")
                         reject = True
 
                 if colour.get() == 1 and not reject:
                     colour_dominance = digest_functions.check_colour(image_preview)
-                    if colour_dominance != "Not colour dominant":
+                    if colour_dominance != "Normal colour distribution":
                         output = os.path.join(output, colour_dominance)
+
+                image_preview.close()
             else:
                 output = os.path.join(output, "No thumbnail available")
 
@@ -873,7 +897,7 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
             if aborted:
                 main("Aborted Digest")
             elif digest_failed:
-                main("Ingest aborted, you may be out of space")
+                main("Digest aborted, you may be out of space")
             elif len(image_list) > 0:
                 progress["value"] = 100 - len(image_list) / total_files * 100
                 next_index = activity_list.size() + 1
@@ -909,8 +933,10 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
                 next_index = activity_list.size() + 1
                 activity_list.insert(next_index, f"Delegated to {editor_folder.split('/')[-1]}: {name} ")
                 activity_list.yview_scroll(1, "unit")
-                canvas.after(5, lambda: process_image(canvas, operation_type, progress, activity_list, colour, exposure, blur, folder, body, optics, orientation, ingest_name))
-    pass
+                canvas.after(1, lambda: process_image(canvas, operation_type, progress, activity_list, colour, exposure, blur, folder, body, optics, orientation, ingest_name))
+
+    if len(image_list) + 1 == total_files:
+        time.sleep(1)
 
 
 def main(message=""):
