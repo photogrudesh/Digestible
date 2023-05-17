@@ -19,8 +19,10 @@ import delegate_functions
 import exifread
 from tkinter import ttk
 from tkinter import filedialog
+import pyglet
 
 window = tk.Tk()
+pyglet.font.add_file(asset_relative_path('RobotoMono-VariableFont_wght.ttf'))
 window.geometry("1200x700")
 window.iconbitmap(asset_relative_path("Digestible Icon.ico"))
 window.configure(bg="#FFFFFF")
