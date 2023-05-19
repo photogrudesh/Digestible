@@ -1,6 +1,5 @@
 import configparser
 import datetime
-import os
 import shutil
 import time
 import tkinter as tk
@@ -21,6 +20,8 @@ from tkinter import ttk
 from tkinter import filedialog
 import pyglet
 
+import pyglet, os
+
 window = tk.Tk()
 pyglet.font.add_file(asset_relative_path('RobotoMono-VariableFont_wght.ttf'))
 window.geometry("1200x700")
@@ -29,6 +30,7 @@ window.configure(bg="#FFFFFF")
 window.resizable(False, False)
 config = configparser.ConfigParser()
 version_number = "Digestible v0.3.1"
+pyglet.font.add_file(asset_relative_path("Roboto Mono.ttf"))
 
 image_list = []
 file_names = []
@@ -929,7 +931,12 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
 
             try:
                 backup_root = os.path.join(str(config["Program"]["backup output"]), ingest_name)
+                if not os.path.exists(backup_root):
+                    os.makedirs(backup_root)
             except KeyError:
+                backup_root = ""
+                pass
+            except FileNotFoundError:
                 backup_root = ""
                 pass
 
