@@ -41,6 +41,13 @@ started_calculation = False
 aborted = False
 
 
+def button_hover_action(button, active_image, inactive_image):
+    active = tk.PhotoImage(file=asset_relative_path(active_image))
+    inactive = tk.PhotoImage(file=asset_relative_path(inactive_image))
+    button.bind("<Enter>", func=lambda e: button.config(image=active))
+    button.bind("<Leave>", func=lambda e: button.config(image=inactive))
+
+
 def settings():
     canvas = clear_screen(window)
 
@@ -52,15 +59,28 @@ def settings():
 
     canvas.create_image(250, 0, image=banner, anchor="nw")
     canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Roboto Mono", 26 * -1))
-    canvas.create_rectangle(0, 0, 250, 700, fill="#F5F5F5", outline="")
+    canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
     canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Roboto Mono", 26 * -1))
-    tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=135.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=170.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240, width=249.0, height=35.0)
-    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240, width=249.0, height=35.0)
-    tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=205.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=603.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0, command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=638.0, width=249.0, height=35.0)
+    main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(), relief="flat", bg="#F7F9F9", anchor="nw")
+    main_btn.place(x=0.0, y=135.0, width=249.0, height=35.0)
+    ingest_btn = tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(), relief="flat", bg="#F7F9F9", anchor="nw")
+    ingest_btn.place(x=0.0, y=170.0, width=249.0, height=35.0)
+    digest_btn = tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(), relief="flat", anchor="nw", bg="#F7F9F9")
+    digest_btn.place(x=0.0, y=205.0, width=249.0, height=35.0)
+    delegate_btn = tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9")
+    delegate_btn.place(x=0.0, y=240, width=249.0, height=35.0)
+    help_btn = tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(), relief="flat", bg="#F7F9F9", anchor="nw")
+    help_btn.place(x=0.0, y=603.0, width=249.0, height=35.0)
+    settings_btn = tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0, command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw")
+    settings_btn.place(x=0.0, y=638.0, width=249.0, height=35.0)
+
+    button_hover_action(main_btn, "home_btn.png", "in_home.png")
+    button_hover_action(ingest_btn, "ingest_btn.png", "in_ingest.png")
+    button_hover_action(digest_btn, "digest_btn.png", "in_digest.png")
+    button_hover_action(delegate_btn, "delegate_btn.png", "in_delegate.png")
+    button_hover_action(help_btn, "help_btn.png", "in_help.png")
+    button_hover_action(settings_btn, "settings_btn.png", "in_settings.png")
+
     # SIDEBAR
 
     canvas.create_text(300, 140, text="Output Preferences", anchor="nw", fill="#37352F", font=("Roboto Mono", 15))
@@ -162,17 +182,17 @@ def add_editors(editor_string):
 def get_sidebar_assets():
     banner = tk.PhotoImage(file=asset_relative_path("banner_g.png"))
 
-    button_image_home = tk.PhotoImage(file=asset_relative_path("home_btn.png"))
+    button_image_home = tk.PhotoImage(file=asset_relative_path("in_home.png"))
 
-    button_image_ingest = tk.PhotoImage(file=asset_relative_path("ingest_btn.png"))
+    button_image_ingest = tk.PhotoImage(file=asset_relative_path("in_ingest.png"))
 
-    button_image_delegate = tk.PhotoImage(file=asset_relative_path("delegate_btn.png"))
+    button_image_delegate = tk.PhotoImage(file=asset_relative_path("in_delegate.png"))
 
-    button_image_digest = tk.PhotoImage(file=asset_relative_path("digest_btn.png"))
+    button_image_digest = tk.PhotoImage(file=asset_relative_path("in_digest.png"))
 
-    button_image_help = tk.PhotoImage(file=asset_relative_path("help_btn.png"))
+    button_image_help = tk.PhotoImage(file=asset_relative_path("in_help.png"))
 
-    button_image_settings = tk.PhotoImage(file=asset_relative_path("settings_btn.png"))
+    button_image_settings = tk.PhotoImage(file=asset_relative_path("in_settings.png"))
 
     return banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings
 
@@ -187,19 +207,38 @@ def help_menu():
 
     canvas.create_image(250, 0, image=banner, anchor="nw")
     canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Roboto Mono", 26 * -1))
-    canvas.create_rectangle(0, 0, 250, 700, fill="#F5F5F5", outline="")
+    canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
     canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Roboto Mono", 26 * -1))
-    tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=135.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=170.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240, width=249.0, height=35.0)
-    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240, width=249.0, height=35.0)
-    tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=205.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=603.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0, command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=638.0, width=249.0, height=35.0)
+    main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(),
+                         relief="flat", bg="#F7F9F9", anchor="nw")
+    main_btn.place(x=0.0, y=135.0, width=249.0, height=35.0)
+    ingest_btn = tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(),
+                           relief="flat", bg="#F7F9F9", anchor="nw")
+    ingest_btn.place(x=0.0, y=170.0, width=249.0, height=35.0)
+    digest_btn = tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(),
+                           relief="flat", anchor="nw", bg="#F7F9F9")
+    digest_btn.place(x=0.0, y=205.0, width=249.0, height=35.0)
+    delegate_btn = tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0,
+                             command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9")
+    delegate_btn.place(x=0.0, y=240, width=249.0, height=35.0)
+    help_btn = tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(),
+                         relief="flat", bg="#F7F9F9", anchor="nw")
+    help_btn.place(x=0.0, y=603.0, width=249.0, height=35.0)
+    settings_btn = tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0,
+                             command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw")
+    settings_btn.place(x=0.0, y=638.0, width=249.0, height=35.0)
+
+    button_hover_action(main_btn, "home_btn.png", "in_home.png")
+    button_hover_action(ingest_btn, "ingest_btn.png", "in_ingest.png")
+    button_hover_action(digest_btn, "digest_btn.png", "in_digest.png")
+    button_hover_action(delegate_btn, "delegate_btn.png", "in_delegate.png")
+    button_hover_action(help_btn, "help_btn.png", "in_help.png")
+    button_hover_action(settings_btn, "settings_btn.png", "in_settings.png")
+
     # SIDEBAR
 
     canvas.create_text(725, 140, anchor="n",
-                       text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nWhen you get home after a shoot, Ingest mode makes it easy to process the files from your camera (cards under 100 GB). Digestible automatically sorts images by camera body, lens used, and orientation of the image so you don't have to.\n\nAfter you've ingested your images, it's time to start culling! Digest mode automatically separates images based on how usable they are by analysing exposure and blurriness, so you can quickly identify the images that are worth keeping.\n\nOnce you've sorted your images, it's time to delegate them to your team for post-production. Delegate mode automatically splits the sorted images between editors evenly so editing can become as soon as possible.",
+                       text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nWhen you get home after a shoot, Ingest mode makes it easy to process the files from your camera (cards under 100 GB). Digestible automatically sorts images by camera body, lens used, and orientation of the image so you don't have to.\n\nAfter you've ingested your images, it's time to start culling! Digest mode automatically separates images based on how usable they are by analysing exposure and blurriness, so you can quickly identify the images that are worth keeping.\n\nOnce you've sorted your images, it's time to delegate them to your team for post-production. Delegate mode automatically splits the sorted images between editors evenly so editing can begin as soon as possible.",
                        width=800, font=("Roboto Mono", 12), fill="#37352F")
 
     window.mainloop()
@@ -278,15 +317,34 @@ def ingest():
 
     canvas.create_image(250, 0, image=banner, anchor="nw")
     canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Roboto Mono", 26 * -1))
-    canvas.create_rectangle(0, 0, 250, 700, fill="#F5F5F5", outline="")
+    canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
     canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Roboto Mono", 26 * -1))
-    tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=135.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=170.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240, width=249.0, height=35.0)
-    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240, width=249.0, height=35.0)
-    tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=205.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=603.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0, command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=638.0, width=249.0, height=35.0)
+    main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(),
+                         relief="flat", bg="#F7F9F9", anchor="nw")
+    main_btn.place(x=0.0, y=135.0, width=249.0, height=35.0)
+    ingest_btn = tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(),
+                           relief="flat", bg="#F7F9F9", anchor="nw")
+    ingest_btn.place(x=0.0, y=170.0, width=249.0, height=35.0)
+    digest_btn = tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(),
+                           relief="flat", anchor="nw", bg="#F7F9F9")
+    digest_btn.place(x=0.0, y=205.0, width=249.0, height=35.0)
+    delegate_btn = tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0,
+                             command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9")
+    delegate_btn.place(x=0.0, y=240, width=249.0, height=35.0)
+    help_btn = tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(),
+                         relief="flat", bg="#F7F9F9", anchor="nw")
+    help_btn.place(x=0.0, y=603.0, width=249.0, height=35.0)
+    settings_btn = tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0,
+                             command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw")
+    settings_btn.place(x=0.0, y=638.0, width=249.0, height=35.0)
+
+    button_hover_action(main_btn, "home_btn.png", "in_home.png")
+    button_hover_action(ingest_btn, "ingest_btn.png", "in_ingest.png")
+    button_hover_action(digest_btn, "digest_btn.png", "in_digest.png")
+    button_hover_action(delegate_btn, "delegate_btn.png", "in_delegate.png")
+    button_hover_action(help_btn, "help_btn.png", "in_help.png")
+    button_hover_action(settings_btn, "settings_btn.png", "in_settings.png")
+
     # SIDEBAR
 
     image_list = []
@@ -429,15 +487,34 @@ def digest(selected_folder=""):
 
     canvas.create_image(250, 0, image=banner, anchor="nw")
     canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Roboto Mono", 26 * -1))
-    canvas.create_rectangle(0, 0, 250, 700, fill="#F5F5F5", outline="")
+    canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
     canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Roboto Mono", 26 * -1))
-    tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=135.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=170.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240, width=249.0, height=35.0)
-    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240, width=249.0, height=35.0)
-    tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=205.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=603.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0, command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=638.0, width=249.0, height=35.0)
+    main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(),
+                         relief="flat", bg="#F7F9F9", anchor="nw")
+    main_btn.place(x=0.0, y=135.0, width=249.0, height=35.0)
+    ingest_btn = tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(),
+                           relief="flat", bg="#F7F9F9", anchor="nw")
+    ingest_btn.place(x=0.0, y=170.0, width=249.0, height=35.0)
+    digest_btn = tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(),
+                           relief="flat", anchor="nw", bg="#F7F9F9")
+    digest_btn.place(x=0.0, y=205.0, width=249.0, height=35.0)
+    delegate_btn = tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0,
+                             command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9")
+    delegate_btn.place(x=0.0, y=240, width=249.0, height=35.0)
+    help_btn = tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(),
+                         relief="flat", bg="#F7F9F9", anchor="nw")
+    help_btn.place(x=0.0, y=603.0, width=249.0, height=35.0)
+    settings_btn = tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0,
+                             command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw")
+    settings_btn.place(x=0.0, y=638.0, width=249.0, height=35.0)
+
+    button_hover_action(main_btn, "home_btn.png", "in_home.png")
+    button_hover_action(ingest_btn, "ingest_btn.png", "in_ingest.png")
+    button_hover_action(digest_btn, "digest_btn.png", "in_digest.png")
+    button_hover_action(delegate_btn, "delegate_btn.png", "in_delegate.png")
+    button_hover_action(help_btn, "help_btn.png", "in_help.png")
+    button_hover_action(settings_btn, "settings_btn.png", "in_settings.png")
+
     # SIDEBAR
 
     if len(image_list) > 500:
@@ -524,15 +601,34 @@ def delegate(selected_folder=""):
 
     canvas.create_image(250, 0, image=banner, anchor="nw")
     canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Roboto Mono", 26 * -1))
-    canvas.create_rectangle(0, 0, 250, 700, fill="#F5F5F5", outline="")
+    canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
     canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Roboto Mono", 26 * -1))
-    tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=135.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=170.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240, width=249.0, height=35.0)
-    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240, width=249.0, height=35.0)
-    tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=205.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=603.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0, command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=638.0, width=249.0, height=35.0)
+    main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(),
+                         relief="flat", bg="#F7F9F9", anchor="nw")
+    main_btn.place(x=0.0, y=135.0, width=249.0, height=35.0)
+    ingest_btn = tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(),
+                           relief="flat", bg="#F7F9F9", anchor="nw")
+    ingest_btn.place(x=0.0, y=170.0, width=249.0, height=35.0)
+    digest_btn = tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(),
+                           relief="flat", anchor="nw", bg="#F7F9F9")
+    digest_btn.place(x=0.0, y=205.0, width=249.0, height=35.0)
+    delegate_btn = tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0,
+                             command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9")
+    delegate_btn.place(x=0.0, y=240, width=249.0, height=35.0)
+    help_btn = tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(),
+                         relief="flat", bg="#F7F9F9", anchor="nw")
+    help_btn.place(x=0.0, y=603.0, width=249.0, height=35.0)
+    settings_btn = tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0,
+                             command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw")
+    settings_btn.place(x=0.0, y=638.0, width=249.0, height=35.0)
+
+    button_hover_action(main_btn, "home_btn.png", "in_home.png")
+    button_hover_action(ingest_btn, "ingest_btn.png", "in_ingest.png")
+    button_hover_action(digest_btn, "digest_btn.png", "in_digest.png")
+    button_hover_action(delegate_btn, "delegate_btn.png", "in_delegate.png")
+    button_hover_action(help_btn, "help_btn.png", "in_help.png")
+    button_hover_action(settings_btn, "settings_btn.png", "in_settings.png")
+
     # SIDEBAR
 
     if digested_found:
@@ -671,15 +767,34 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
 
     canvas.create_image(250, 0, image=banner, anchor="nw")
     canvas.create_text(300.0, 34.0, anchor="nw", text=operation_type, fill="#F5F5F5", font=("Roboto Mono", 26 * -1))
-    canvas.create_rectangle(0, 0, 250, 700, fill="#F5F5F5", outline="")
+    canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
     canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Roboto Mono", 26 * -1))
-    tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(), relief="flat", bg="#F7F9F9", anchor="nw", state="disabled").place(x=0.0, y=135.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(), relief="flat", bg="#F7F9F9", anchor="nw", state="disabled").place(x=0.0, y=170.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9", state="disabled").place(x=0.0, y=240, width=249.0, height=35.0)
-    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9", state="disabled").place(x=0.0, y=240, width=249.0, height=35.0)
-    tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(), relief="flat", anchor="nw", bg="#F7F9F9", state="disabled").place(x=0.0, y=205.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(), relief="flat", bg="#F7F9F9", anchor="nw", state="disabled").place(x=0.0, y=603.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0, command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw", state="disabled").place(x=0.0, y=638.0, width=249.0, height=35.0)
+    main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(),
+                         relief="flat", bg="#F7F9F9", anchor="nw", state="disabled")
+    main_btn.place(x=0.0, y=135.0, width=249.0, height=35.0)
+    ingest_btn = tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(),
+                           relief="flat", bg="#F7F9F9", anchor="nw", state="disabled")
+    ingest_btn.place(x=0.0, y=170.0, width=249.0, height=35.0)
+    digest_btn = tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(),
+                           relief="flat", anchor="nw", bg="#F7F9F9", state="disabled")
+    digest_btn.place(x=0.0, y=205.0, width=249.0, height=35.0)
+    delegate_btn = tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0,
+                             command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9", state="disabled")
+    delegate_btn.place(x=0.0, y=240, width=249.0, height=35.0)
+    help_btn = tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(),
+                         relief="flat", bg="#F7F9F9", anchor="nw", state="disabled")
+    help_btn.place(x=0.0, y=603.0, width=249.0, height=35.0)
+    settings_btn = tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0,
+                             command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw", state="disabled")
+    settings_btn.place(x=0.0, y=638.0, width=249.0, height=35.0)
+
+    button_hover_action(main_btn, "home_btn.png", "in_home.png")
+    button_hover_action(ingest_btn, "ingest_btn.png", "in_ingest.png")
+    button_hover_action(digest_btn, "digest_btn.png", "in_digest.png")
+    button_hover_action(delegate_btn, "delegate_btn.png", "in_delegate.png")
+    button_hover_action(help_btn, "help_btn.png", "in_help.png")
+    button_hover_action(settings_btn, "settings_btn.png", "in_settings.png")
+
     # SIDEBAR
 
     if operation_type == "Delegating":
@@ -761,6 +876,31 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
     window.mainloop()
 
 
+def check_filename(current_file, current_image):
+    name = ""
+
+    if current_file in file_names:
+        try:
+            file = open(current_image, 'rb')
+            image_name = current_file.split(".")[0]
+            extension = current_file.split(".")[-1]
+
+            try:
+                tags = exifread.process_file(file, stop_tag='LensModel', details=False)
+                name = image_name + " " + str(tags["Image DateTime"]).replace(":", "-") + "." + extension
+            except KeyError:
+                current_time = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+
+                name = image_name + " " + str(current_time) + " duplicate" + "." + extension
+
+            file.close()
+
+        except FileNotFoundError:
+            main(f"Operation aborted, {current_image} was not found")
+
+    return name
+
+
 def process_image(canvas, operation_type, progress, activity_list, colour=None, exposure=None, blur=None, folder=None, body=None, optics=None, orientation=None, ingest_name=None):
     global total_files
     global image_list
@@ -783,10 +923,9 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
 
             num_files = total_files - len(image_list)
 
-            name = ""
-            ingest_failed = False
-
             root = os.path.join(str(config["Program"]["default output"]), ingest_name)
+
+            name = check_filename(current_file, current_image)
 
             try:
                 backup_root = os.path.join(str(config["Program"]["backup output"]), ingest_name)
@@ -794,32 +933,13 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
                 backup_root = ""
                 pass
 
-            if current_file in file_names:
-                try:
-                    file = open(current_image, 'rb')
-                    image_name = current_file.split(".")[0]
-                    extension = current_file.split(".")[-1]
-
-                    try:
-                        tags = exifread.process_file(file, stop_tag='LensModel', details=False)
-                        name = image_name + " " + str(tags["Image DateTime"]).replace(":", "-") + "." + extension
-                    except KeyError:
-                        current_time = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-
-                        name = image_name + " " + str(current_time) + " duplicate " + "." + extension
-
-                except FileNotFoundError:
-                    ingest_failed = True
-
             ingest_image(activity_list, body, optics, orientation, current_image, root, name, current_file, backup_root)
 
             progress["value"] = 100 - len(image_list) / total_files * 100
 
             average_time = (average_time * (num_files - 1) + time.time() - start_time) / num_files
 
-            if ingest_failed:
-                main("Ingest aborted")
-            elif len(image_list) > 0:
+            if len(image_list) > 0:
                 window.after(1, lambda: process_image(canvas, operation_type, progress, activity_list, colour, exposure, blur, folder, body, optics, orientation, ingest_name))
             else:
                 time.sleep(0.5)
@@ -829,28 +949,17 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
             root = os.path.join(folder, "Digested Images")
 
             start_time = time.time()
-            digest_failed = False
 
             current_image = image_list[-1]
-            file_name = file_names[-1]
+            current_file = file_names[-1]
             del image_list[-1]
             del file_names[-1]
 
-            name = ""
             colour_dominance = "Not tested"
             exposure_check = "Unknown"
             blurry = "Unknown"
 
-            if file_name in file_names:
-                try:
-                    file = open(current_image, 'rb')
-                    image_name = file_name.split(".")[0]
-                    extension = file_name.split(".")[-1]
-                    tags = exifread.process_file(file, stop_tag='LensModel', details=False)
-                    name = image_name + " " + str(tags["Image DateTime"]).replace(":", "-") + "." + extension
-                    file.close()
-                except FileNotFoundError:
-                    aborted = True
+            name, digest_failed = check_filename(current_file, current_image)
 
             image_preview = digest_functions.get_thumbnail(current_image)
             output = root
@@ -887,12 +996,12 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
                 if not os.path.exists(output):
                     os.makedirs(output)
 
-                shutil.copy2(current_image, os.path.join(output, file_name))
+                shutil.copy2(current_image, os.path.join(output, current_file))
             except OSError:
                 digest_failed = False
 
             if name != "":
-                original_output_file_dir = os.path.join(output, file_name)
+                original_output_file_dir = os.path.join(output, current_file)
                 final_dir = os.path.join(output, name)
                 os.rename(original_output_file_dir, final_dir)
 
@@ -903,7 +1012,7 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
             elif len(image_list) > 0:
                 progress["value"] = 100 - len(image_list) / total_files * 100
                 next_index = activity_list.size() + 1
-                activity_list.insert(next_index, f"{file_name}: {colour_dominance}, {exposure_check}, blur: {blurry}")
+                activity_list.insert(next_index, f"{current_file}: {colour_dominance}, {exposure_check}, blur: {blurry}")
                 activity_list.yview_scroll(1, "unit")
                 average_time = (average_time * (len(image_list) - 1) + time.time() - start_time) / len(image_list)
                 window.after(1, lambda: process_image(canvas, operation_type, progress, activity_list, colour, exposure, blur, folder, body, optics, orientation, ingest_name))
@@ -980,15 +1089,34 @@ def main(message=""):
 
     banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets()
 
-    canvas.create_rectangle(0, 0, 250, 700, fill="#F5F5F5", outline="")
+    canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
     canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Roboto Mono", 26 * -1))
-    tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=135.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=170.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240, width=249.0, height=35.0)
-    tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0, command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=240, width=249.0, height=35.0)
-    tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(), relief="flat", anchor="nw", bg="#F7F9F9").place(x=0.0, y=205.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=603.0, width=249.0, height=35.0)
-    tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0, command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw").place(x=0.0, y=638.0, width=249.0, height=35.0)
+    main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(),
+                         relief="flat", bg="#F7F9F9", anchor="nw")
+    main_btn.place(x=0.0, y=135.0, width=249.0, height=35.0)
+    ingest_btn = tk.Button(image=button_image_ingest, borderwidth=0, highlightthickness=0, command=lambda: ingest(),
+                           relief="flat", bg="#F7F9F9", anchor="nw")
+    ingest_btn.place(x=0.0, y=170.0, width=249.0, height=35.0)
+    digest_btn = tk.Button(image=button_image_digest, borderwidth=0, highlightthickness=0, command=lambda: digest(),
+                           relief="flat", anchor="nw", bg="#F7F9F9")
+    digest_btn.place(x=0.0, y=205.0, width=249.0, height=35.0)
+    delegate_btn = tk.Button(image=button_image_delegate, borderwidth=0, highlightthickness=0,
+                             command=lambda: delegate(), relief="flat", anchor="nw", bg="#F7F9F9")
+    delegate_btn.place(x=0.0, y=240, width=249.0, height=35.0)
+    help_btn = tk.Button(image=button_image_help, borderwidth=0, highlightthickness=0, command=lambda: help_menu(),
+                         relief="flat", bg="#F7F9F9", anchor="nw")
+    help_btn.place(x=0.0, y=603.0, width=249.0, height=35.0)
+    settings_btn = tk.Button(image=button_image_settings, borderwidth=0, highlightthickness=0,
+                             command=lambda: settings(), relief="flat", bg="#F7F9F9", anchor="nw")
+    settings_btn.place(x=0.0, y=638.0, width=249.0, height=35.0)
+
+    button_hover_action(main_btn, "home_btn.png", "in_home.png")
+    button_hover_action(ingest_btn, "ingest_btn.png", "in_ingest.png")
+    button_hover_action(digest_btn, "digest_btn.png", "in_digest.png")
+    button_hover_action(delegate_btn, "delegate_btn.png", "in_delegate.png")
+    button_hover_action(help_btn, "help_btn.png", "in_help.png")
+    button_hover_action(settings_btn, "settings_btn.png", "in_settings.png")
+
     # SIDEBAR
 
     window.mainloop()

@@ -58,44 +58,39 @@ def ingest_image(activity_list, body, optics, orientation, current_image, root, 
 
     main_out = os.path.join(root, output)
 
-    if os.path.exists(os.path.join(main_out, name)) and name != "":
-        activity_list.insert(next_index, f"Skipped {current_file}, file already exists at {output}")
-        activity_list.yview_scroll(1, "unit")
+    try:
+        if not os.path.isdir(main_out):
+            os.makedirs(main_out)
 
-    else:
+        shutil.copy2(current_image, main_out)
+
+        if name != "":
+            original_output_file_dir = os.path.join(main_out, current_file)
+            final_dir = os.path.join(main_out, name)
+            os.rename(original_output_file_dir, final_dir)
+    except FileNotFoundError:
+        ingest_failed = True
+
+    if backup_root != "":
         try:
-            if not os.path.isdir(main_out):
-                os.makedirs(main_out)
+            backup_out = os.path.join(backup_root, output)
 
-            shutil.copy2(current_image, main_out)
+            shutil.copy2(current_image, backup_out)
 
             if name != "":
-                original_output_file_dir = os.path.join(main_out, current_file)
-                final_dir = os.path.join(main_out, name)
-                os.rename(original_output_file_dir, final_dir)
+                original_backup_file_dir = os.path.join(backup_out, current_file)
+                final_backup_dir = os.path.join(backup_out, name)
+                os.rename(original_backup_file_dir, final_backup_dir)
+
         except FileNotFoundError:
-            ingest_failed = True
+            pass
 
-        if backup_root != "":
-            try:
-                backup_out = os.path.join(backup_root, output)
+    if body_name == "Unknown" and lens_name == "Unknown" and orientation_str == "Unknown":
+        message = "Image was not sorted"
+    else:
+        message = f"Shot on {body_name.strip()} with {lens_name.strip()} in {orientation_str} orientation"
 
-                shutil.copy2(current_image, backup_out)
+    activity_list.insert(next_index, f"{current_file}: {message}")
+    activity_list.yview_scroll(1, "unit")
 
-                if name != "":
-                    original_backup_file_dir = os.path.join(backup_out, current_file)
-                    final_backup_dir = os.path.join(backup_out, name)
-                    os.rename(original_backup_file_dir, final_backup_dir)
-
-            except FileNotFoundError:
-                pass
-
-        if body_name == "Unknown" and lens_name == "Unknown" and orientation_str == "Unknown":
-            message = "Image was not sorted"
-        else:
-            message = f"Shot on {body_name.strip()} with {lens_name.strip()} in {orientation_str} orientation"
-
-        activity_list.insert(next_index, f"{current_file}: {message}")
-        activity_list.yview_scroll(1, "unit")
-
-        return ingest_failed
+    return ingest_failed
