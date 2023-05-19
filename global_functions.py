@@ -9,6 +9,7 @@ environment = Environment()
 
 def is_media(file):
     media = "none"
+
     ext = file.split(".")[-1]
     raw_extensions = ["cr2", "rw2", "raf", "erf", "nrw", "nef", "arw", "rwz", "eip", "bay", "dng", "dcr", "gpr",
                       "raw",
@@ -23,6 +24,14 @@ def is_media(file):
         media = "image"
     elif ext.lower() in video_extensions:
         media = "video"
+
+    if os.name == "nt":
+        filename = file.split("\\")[-1]
+    else:
+        filename = file.split("/")[-1]
+
+    if filename.startswith('.'):
+        media = "none"
 
     return media
 
@@ -45,6 +54,7 @@ def asset_relative_path(path):
     # full_path = os.path.join(environment.get_main_path(), path)
 
     return full_path
+
 
 
 def write(config_file):
