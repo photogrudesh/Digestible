@@ -5,12 +5,13 @@ from global_functions import is_media
 
 
 def ingest_image(activity_list, body, optics, orientation, current_image, root, name, current_file, backup_root):
-    body_name = "Unknown"
-    lens_name = "Unknown"
-    orientation_str = "Unknown"
+    body_name = "unknown body"
+    lens_name = "unknown lens"
+    orientation_str = "unknown"
     ingest_failed = False
 
     output = ""
+    message = "Image shot with "
 
     if body.get() == 0 and optics.get() == 0 and orientation.get() == 0:
         pass
@@ -27,28 +28,34 @@ def ingest_image(activity_list, body, optics, orientation, current_image, root, 
 
                 file.close()
 
-                if body.get() == 1 and "Image Model" in tags:
-                    body_name = str(tags['Image Model']).strip()
-                else:
-                    body_name = "Body unknown"
+                if body.get() == 1:
+                    if "Image Model" in tags:
+                        body_name = str(tags['Image Model']).strip()
+                    else:
+                        body_name = "unknown body"
 
-                output = os.path.join(output, body_name.replace("/", "").replace("\\", "").replace("*", "").replace( ":", "").replace("<", "").replace(">", "").replace("|", ""))
+                    output = os.path.join(output, body_name.replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", ""))
+                    message += f"{body_name} "
 
-                if optics.get() == 1 and "EXIF LensModel" in tags:
-                    lens_name = str(tags['EXIF LensModel']).strip()
-                else:
-                    lens_name = "Lens unknown"
+                if optics.get() == 1:
+                    if "EXIF LensModel" in tags:
+                        lens_name = str(tags['EXIF LensModel']).strip()
+                    else:
+                        lens_name = "unknown lens"
 
-                output = os.path.join(output, lens_name.replace("/", "").replace("\\", "").replace("*", "").replace( ":", "").replace("<", "").replace(">", "").replace("|", ""))
+                    output = os.path.join(output, lens_name.replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", ""))
+                    message += f"with {lens_name} "
 
-                if orientation.get() == 1 and "Image Orientation" in tags:
-                    orientation_str = str(tags['Image Orientation']).strip()
-                else:
-                    orientation_str = "Orientation unknown"
+                if orientation.get() == 1:
+                    if "Image Orientation" in tags:
+                        orientation_str = str(tags['Image Orientation']).strip()
+                    else:
+                        orientation_str = "unknown"
 
-                output = os.path.join(output, orientation_str.replace("/", "").replace("\\", "").replace("*", "").replace( ":", "").replace("<", "").replace(">", "").replace("|", ""))
+                    output = os.path.join(output, orientation_str.replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", ""))
+                    message += f"in {orientation_str} orientation"
 
-                if body_name == "Body unknown" and lens_name == "Lens unknown" and orientation_str == "Orientation unknown":
+                if body_name == "unknown body" and lens_name == "unknown lens" and orientation_str == "unknown":
                     output = "Unsorted (No image data)"
 
         except FileNotFoundError:
@@ -64,7 +71,7 @@ def ingest_image(activity_list, body, optics, orientation, current_image, root, 
 
         shutil.copy2(current_image, main_out)
 
-        if name != "":
+        if name != "" and not os.path.exists(os.path.join(main_out, name)):
             original_output_file_dir = os.path.join(main_out, current_file)
             final_dir = os.path.join(main_out, name)
             os.rename(original_output_file_dir, final_dir)
@@ -74,6 +81,9 @@ def ingest_image(activity_list, body, optics, orientation, current_image, root, 
     if backup_root != "":
         try:
             backup_out = os.path.join(backup_root, output)
+
+            if not os.path.exists(backup_out):
+                os.makedirs(backup_out)
 
             shutil.copy2(current_image, backup_out)
 
@@ -85,10 +95,8 @@ def ingest_image(activity_list, body, optics, orientation, current_image, root, 
         except FileNotFoundError:
             pass
 
-    if body_name == "Unknown" and lens_name == "Unknown" and orientation_str == "Unknown":
-        message = "Image was not sorted"
-    else:
-        message = f"Shot on {body_name.strip()} with {lens_name.strip()} in {orientation_str} orientation"
+    if body_name == "unknown body" and lens_name == "unknown lens" and orientation_str == "unknown":
+        message = "Unsorted (No image data)"
 
     activity_list.insert(next_index, f"{current_file}: {message}")
     activity_list.yview_scroll(1, "unit")

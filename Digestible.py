@@ -23,13 +23,12 @@ import pyglet
 import pyglet, os
 
 window = tk.Tk()
-pyglet.font.add_file(asset_relative_path('RobotoMono-VariableFont_wght.ttf'))
 window.geometry("1200x700")
 window.iconbitmap(asset_relative_path("Digestible Icon.ico"))
 window.configure(bg="#FFFFFF")
 window.resizable(False, False)
 config = configparser.ConfigParser()
-version_number = "Digestible v0.3.1"
+version_number = "Digestible v0.3.2"
 pyglet.font.add_file(asset_relative_path("Roboto Mono.ttf"))
 
 image_list = []
@@ -241,7 +240,7 @@ def help_menu():
 
     canvas.create_text(725, 140, anchor="n",
                        text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nWhen you get home after a shoot, Ingest mode makes it easy to process the files from your camera (cards under 100 GB). Digestible automatically sorts images by camera body, lens used, and orientation of the image so you don't have to.\n\nAfter you've ingested your images, it's time to start culling! Digest mode automatically separates images based on how usable they are by analysing exposure and blurriness, so you can quickly identify the images that are worth keeping.\n\nOnce you've sorted your images, it's time to delegate them to your team for post-production. Delegate mode automatically splits the sorted images between editors evenly so editing can begin as soon as possible.",
-                       width=800, font=("Roboto Mono", 12), fill="#37352F")
+                       width=800, font=("Roboto Mono", 14), fill="#37352F")
 
     window.mainloop()
 
@@ -393,15 +392,15 @@ def ingest():
 
     body = tk.Checkbutton(window, text="Body Type", variable=sort_body)
     body.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
-    body.place(x=380, y=650.0)
+    body.place(x=380, y=648.0)
 
     optics = tk.Checkbutton(window, text="Optics", variable=sort_optics)
     optics.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
-    optics.place(x=473.0, y=650.0)
+    optics.place(x=473.0, y=648.0)
 
     orient = tk.Checkbutton(window, text="Orientation", variable=sort_orientation)
     orient.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
-    orient.place(x=541.0, y=650.0)
+    orient.place(x=541.0, y=648.0)
 
     current_time = datetime.datetime.now()
     default_name = current_time.strftime("%d-%m-%Y-%H-%M-%S")
@@ -799,6 +798,8 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
 
     # SIDEBAR
 
+    time.sleep(1)
+
     if operation_type == "Delegating":
         output = os.path.join(folder, "Delegated Images")
 
@@ -966,7 +967,7 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
             exposure_check = "Unknown"
             blurry = "Unknown"
 
-            name, digest_failed = check_filename(current_file, current_image)
+            name = check_filename(current_file, current_image)
 
             image_preview = digest_functions.get_thumbnail(current_image)
             output = root
@@ -1005,18 +1006,14 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
 
                 shutil.copy2(current_image, os.path.join(output, current_file))
             except OSError:
-                digest_failed = False
+                pass
 
             if name != "":
                 original_output_file_dir = os.path.join(output, current_file)
                 final_dir = os.path.join(output, name)
                 os.rename(original_output_file_dir, final_dir)
 
-            if aborted:
-                main("Aborted Digest")
-            elif digest_failed:
-                main("Digest aborted, you may be out of space")
-            elif len(image_list) > 0:
+            if len(image_list) > 0:
                 progress["value"] = 100 - len(image_list) / total_files * 100
                 next_index = activity_list.size() + 1
                 activity_list.insert(next_index, f"{current_file}: {colour_dominance}, {exposure_check}, blur: {blurry}")
@@ -1067,12 +1064,12 @@ def main(message=""):
     wallpaper = tk.PhotoImage(file=asset_relative_path("main_wp.png"))
     canvas.create_image(250, 0, image=wallpaper, anchor="nw")
 
-    welcome_message = canvas.create_text(1160.0, 45.0, anchor="ne", text="Welcome to Digestible 👋", fill="#37352F", font=("Roboto Mono", 14 * -1))
+    welcome_message = canvas.create_text(1160.0, 45.0, anchor="ne", text="Welcome to Digestible", fill="#37352F", font=("Roboto Mono", 14 * -1))
 
     try:
         response = requests.get("https://api.github.com/repos/photogrudesh/digestible/releases/latest", timeout=3)
         if response.json()["name"] != version_number:
-            canvas.itemconfig(welcome_message, text=f"{response.json()['name']} is available 🌐")
+            canvas.itemconfig(welcome_message, text=f"{response.json()['name']} is available")
     except requests.ConnectionError:
         pass
     except requests.Timeout:
