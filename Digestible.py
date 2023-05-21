@@ -87,7 +87,7 @@ def settings():
 
     # SIDEBAR
 
-    canvas.create_text(300, 140, text="Output Preferences", anchor="nw", fill="#37352F", font=("Roboto Mono", 15))
+    canvas.create_text(300, 140, text="Ingest Output Preferences", anchor="nw", fill="#37352F", font=("Roboto Mono", 15))
 
     output_img = tk.PhotoImage(file=asset_relative_path("main_output_btn.png"))
     add_default_output = tk.Button(image=output_img, bg="#FFFFFF", command=lambda: add_dir(default=True), anchor="nw", borderwidth=0, highlightthickness=0, relief="flat")
@@ -95,12 +95,12 @@ def settings():
 
     backup_img = tk.PhotoImage(file=asset_relative_path("backup_btn.png"))
     add_backup_output = tk.Button(image=backup_img, bg="#FFFFFF", command=lambda: add_dir(default=False), anchor="nw", borderwidth=0, highlightthickness=0, relief="flat")
-    add_backup_output.place(x=550, y=180)
+    add_backup_output.place(x=570, y=180)
 
-    canvas.create_text(300, 230, text="This is where your ingests will go", anchor="nw", fill="#37352F",
+    canvas.create_text(300, 230, text="Ingests will be saved to your output folder and your backup folder simultaneously if available", anchor="nw", fill="#37352F",
                        font=("Roboto Mono", 14 * -1))
 
-    canvas.create_text(300, 300, text="Saved Editors", anchor="nw", fill="#37352F", font=("Roboto Mono", 15))
+    canvas.create_text(300, 290, text="Delegate Speed Dial", anchor="nw", fill="#37352F", font=("Roboto Mono", 15))
 
     if not config.has_option("Program", "saved editors"):
         config["Program"]["saved editors"] = ""
@@ -113,11 +113,11 @@ def settings():
     except ValueError:
         pass
 
-    while len(editors) < 6:
+    while len(editors) < 12:
         editors.append("Open slot")
 
     canvas.create_text(300, 330, text=f"{str(editors).replace('[', '').replace(']', '')}", anchor="nw", fill="#37352F",
-                       font=("Roboto Mono", 11))
+                       font=("Roboto Mono", 11), width=850)
 
     while "Open slot" in editors:
         editors.remove("Open slot")
@@ -128,18 +128,18 @@ def settings():
         placeholder_text = str(editors).replace('[', '').replace(']', '').replace("'", "")
 
     new_editors_var = tk.StringVar()
-    editors_to_add = tk.Entry(window, textvariable=new_editors_var, font=("Roboto Mono", 14), width=45)
+    editors_to_add = tk.Entry(window, textvariable=new_editors_var, font=("Roboto Mono", 14 * -1), width=80)
     editors_to_add.insert(0, f"{placeholder_text}")
     editors_to_add.tk_setPalette(background="#FFFFFF")
     editors_to_add.focus_set()
-    editors_to_add.place(x=300.0, y=370)
+    editors_to_add.place(x=300.0, y=410)
 
-    canvas.create_text(300, 410, text=f"Alter your saved editors by adding names separated by commas.", anchor="nw",
-                       fill="#37352F", font=("Roboto Mono", 12))
+    canvas.create_text(300, 450, text=f"Alter your saved editors by adding names separated by commas.", anchor="nw",
+                       fill="#37352F", font=("Roboto Mono", 14 * -1))
 
     update_image = tk.PhotoImage(file=asset_relative_path("update_btn.png"))
     update_editors = tk.Button(image=update_image, command=lambda: add_editors(new_editors_var), borderwidth=0, highlightthickness=0, relief="flat", bg="#F7FBFB", anchor="w")
-    update_editors.place(x=800.0, y=367)
+    update_editors.place(x=972.0, y=403)
 
     window.mainloop()
 
@@ -171,7 +171,7 @@ def add_editors(editor_string):
 
     for i in editor_string.get().split(","):
         name = i.strip().replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", "")
-        if len(editors) < 6 and name not in editors and name != "Save some editors":
+        if len(editors) < 12 and name not in editors and name != "Save some editors":
             editors.append(i.strip().replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", ""))
 
     for name in editors:
@@ -244,9 +244,9 @@ def help_menu():
 
     # SIDEBAR
 
-    canvas.create_text(725, 140, anchor="n",
-                       text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nWhen you get home after a shoot, Ingest mode makes it easy to process the files from your camera (cards under 100 GB). Digestible automatically sorts images by camera body, lens used, and orientation of the image so you don't have to.\n\nAfter you've ingested your images, it's time to start culling! Digest mode automatically separates images based on how usable they are by analysing exposure and blurriness, so you can quickly identify the images that are worth keeping.\n\nOnce you've sorted your images, it's time to delegate them to your team for post-production. Delegate mode automatically splits the sorted images between editors evenly so editing can begin as soon as possible.",
-                       width=800, font=("Roboto Mono", 14), fill="#37352F")
+    canvas.create_text(725, 150, anchor="n",
+                       text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nWhen you get home after a shoot, Ingest mode makes it easy to process the files from your camera (cards under 100 GB). Digestible automatically sorts images by camera body, lens used, and orientation of the image so you don't have to.\n\nAfter you've ingested your images, it's time to start culling! Digest mode automatically separates images based on how usable they are by analysing exposure and blurriness, so you can quickly identify the images that are worth keeping.\n\nOnce you've sorted your images, it's time to delegate them to your team for post-production. Delegate mode splits the sorted images between editors evenly so editing can begin as soon as possible.",
+                       width=800, font=("Roboto Mono", 16 * -1), fill="#37352F")
 
     window.mainloop()
 
@@ -273,7 +273,7 @@ def time_left(canvas, time_remaining, images_left):
     canvas.itemconfig(images_left, text=f"{str(len(image_list))} files left from {str(total_files)}")
 
     canvas.itemconfig(time_remaining, text=eta)
-    window.after(500, lambda: time_left(canvas, time_remaining, images_left))
+    window.after(1000, lambda: time_left(canvas, time_remaining, images_left))
 
 
 def disable_ingest_button(canvas, ingest_name_var, button_1, message):
@@ -426,31 +426,25 @@ def ingest():
                                                             ingest_name=ingest_name_var.get().strip()), relief="flat")
     button_1.place(x=1020.0, y=642.0, width=160.0, height=35.0)
 
-    message = canvas.create_text(725.0, 580.0, anchor="n", text="Name the ingest below to start", fill="#37352F",
+    message = canvas.create_text(725.0, 595.0, anchor="n", text="Name the ingest below to start", fill="#37352F",
                                  font=("Roboto Mono", 15 * -1), width=850, justify="center")
 
     disable_ingest_button(canvas, ingest_name_var, button_1, message)
 
-    extra_drives = len(inputs) - 3
-    if extra_drives > 0:
-        canvas.create_text(725.0, 250.0, anchor="n",
-                           text=f"{extra_drive_files} files to ingest from {extra_drives} other drive(s)",
-                           fill="#37352F", font=("Roboto Mono", 18 * -1), justify="center")
-
     if len(image_list) > 1000:
-        canvas.create_text(725.0, 307.0, anchor="n", text=f"This may take a while, {len(image_list)} images to ingest",
-                           fill="#FF0000", font=("Roboto Mono", 18 * -1), justify="center")
+        canvas.create_text(725.0, 127.0, anchor="n", text=f"This may take a while, {len(image_list)} images to ingest",
+                           fill="#FF0000", font=("Roboto Mono", 15 * -1), justify="center")
     else:
-        canvas.create_text(725.0, 245.0, anchor="n",
-                           text=f"(Ignoring drives over 100 GB in size)\n{len(image_list)} images to ingest",
-                           fill="#37352F", font=("Roboto Mono", 18 * -1), justify="center")
+        canvas.create_text(725.0, 127.0, anchor="n",
+                           text=f"{len(image_list)} images to ingest from {drives} drive(s) · Ignoring drives over 100 GB in size",
+                           fill="#37352F", font=("Roboto Mono", 15 * -1), justify="center")
 
-    canvas.create_text(500.0, 150.0, anchor="n", text=inputs[0], fill="#37352F", font=("Roboto Mono", 16 * -1))
-    canvas.create_text(725.0, 150.0, anchor="n", text=inputs[1], fill="#37352F", font=("Roboto Mono", 16 * -1))
-    canvas.create_text(950.0, 150.0, anchor="n", text=inputs[2], fill="#37352F", font=("Roboto Mono", 16 * -1))
-    canvas.create_text(500.0, 184.0, anchor="n", text=drive_files[0], fill="#37352F", font=("Roboto Mono", 15 * -1))
-    canvas.create_text(725.0, 184.0, anchor="n", text=drive_files[1], fill="#37352F", font=("Roboto Mono", 15 * -1))
-    canvas.create_text(950.0, 184.0, anchor="n", text=drive_files[2], fill="#37352F", font=("Roboto Mono", 15 * -1))
+    canvas.create_text(500.0, 500.0, anchor="n", text=inputs[0], fill="#37352F", font=("Roboto Mono", 16 * -1))
+    canvas.create_text(725.0, 500.0, anchor="n", text=inputs[1], fill="#37352F", font=("Roboto Mono", 16 * -1))
+    canvas.create_text(950.0, 500.0, anchor="n", text=inputs[2], fill="#37352F", font=("Roboto Mono", 16 * -1))
+    canvas.create_text(500.0, 534.0, anchor="n", text=drive_files[0], fill="#37352F", font=("Roboto Mono", 15 * -1))
+    canvas.create_text(725.0, 534.0, anchor="n", text=drive_files[1], fill="#37352F", font=("Roboto Mono", 15 * -1))
+    canvas.create_text(950.0, 534.0, anchor="n", text=drive_files[2], fill="#37352F", font=("Roboto Mono", 15 * -1))
 
     window.mainloop()
 
@@ -535,7 +529,7 @@ def digest(selected_folder=""):
                            font=("Roboto Mono", 16 * -1))
 
     canvas.create_text(725, 180, anchor="n",
-                       text="\nWelcome to Digest. This should be the second part of your improved post-production workflow, After ingesting, you might want to cull through the images you've just taken, but why bother doing that yourself. The digest mode has 3 options, Colour dominance, Exposure and Blur. While digestible may not be perfect at culling your images, it should still save your time by moving unusable images to a Rejects folder. \n\nExposure is the simplest and most common reasons for an unusable image, Digestible will identify and remove any underexposed or overexposed images from your ingest folder.\n\nThe blur option will identify unusable images based on motion blur. Use with caution if images are intentionally blurry (e.g. panning action shots).\n\nFinally the colour dominance option will split images based on the colour that is most dominant in the frame.\n\nHappy Digesting!",
+                       text="\nWelcome to Digest. This should be the second part of your improved post-production workflow, After ingesting, you might want to cull through the images you've just taken, but why bother doing that yourself. The digest mode has 3 options: Colour dominance, Exposure and Blur. \n\nExposure is the simplest and most common reason for an unusable image, Digestible will identify and remove any irrecoverably underexposed or overexposed images from your ingest folder. Digestible may misidentify images if shot intentionally in low light.\n\nThe blur option will identify unusable images based on how blurry the image is. Use with caution if images are intentionally blurry (e.g. panning action shots).\n\nFinally the colour dominance option will split images based on the colour that is most dominant in the frame. \n\nRemember digest mode is not human and errors in image identification may occur.\n\nHappy Digesting!",
                        width=800, font=("Roboto Mono", 12), fill="#37352F")
 
     canvas.create_text(300.0, 645.0, anchor="nw", text="Options:", fill="#37352F", font=("Roboto Mono", 16 * -1))
@@ -592,7 +586,7 @@ def delegate(selected_folder=""):
         main('Folder has already been delegated, delete the "Delegated Images" folder to try again')
 
     for root, dirs, files in os.walk(selected_folder):
-        if "Rejects" not in root.split("/"):
+        if "Rejects" not in root.split("\\"):
             for f in files:
                 if is_media(f) == "image" and not f.startswith("."):
                     image_list.append(os.path.join(root, f))
@@ -644,16 +638,16 @@ def delegate(selected_folder=""):
     if digested_found:
         canvas.create_text(300.0, 650.0, anchor="nw", text=f"Delegating from: {selected_folder.split('/')[-1]} (Digested folder found)",
                            fill="#37352F",
-                           font=("Roboto Mono", 14 * -1))
+                           font=("Roboto Mono", 15 * -1))
     else:
         canvas.create_text(300.0, 650.0, anchor="nw", text=f"Delegating from: {selected_folder.split('/')[-1]}", fill="#37352F",
-                       font=("Roboto Mono", 14 * -1))
+                           font=("Roboto Mono", 15 * -1))
 
-    canvas.create_text(725.0, 465.0, anchor="n", text="Enter the names (under 20 characters long) of up to 20 additional editors separated by commas.", fill="#37352F", font=("Roboto Mono", 14 * -1))
+    canvas.create_text(725.0, 538.0, anchor="n", text="Enter the names (under 20 characters long) of up to 20 additional editors separated by commas.", fill="#37352F", font=("Roboto Mono", 14 * -1))
 
-    images_per_person_message = canvas.create_text(725.0, 116.0, anchor="n",
+    images_per_person_message = canvas.create_text(725.0, 123.0, anchor="n",
                                                    text=f"Total Images: {total_files}  |  Images per person: ",
-                                                   fill="#37352F", font=("Roboto Mono", 14 * -1))
+                                                   fill="#37352F", font=("Roboto Mono", 15 * -1))
 
     try:
         editors = config["Program"]["saved editors"].split("*")
@@ -662,43 +656,67 @@ def delegate(selected_folder=""):
     except KeyError:
         editors = []
 
-    while len(editors) < 6:
+    while len(editors) < 12:
         editors.append("Save an editor to this list from settings")
 
-    d2e1, d2e2, d2e3, d2e4, d2e5, d2e6 = tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar()
+    d2e1, d2e2, d2e3, d2e4, d2e5, d2e6, d2e7, d2e8, d2e9, d2e10, d2e11, d2e12 = tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar()
 
     e1 = tk.Checkbutton(window, text=editors[0], variable=d2e1)
     e1.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
-    e1.place(x=500.0, y=570.0, anchor="n")
+    e1.place(x=470.0, y=360.0, anchor="n")
 
     e2 = tk.Checkbutton(window, text=editors[1], variable=d2e2)
     e2.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
-    e2.place(x=725.0, y=570.0, anchor="n")
+    e2.place(x=725.0, y=360.0, anchor="n")
 
     e3 = tk.Checkbutton(window, text=editors[2], variable=d2e3)
     e3.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
-    e3.place(x=950.0, y=570.0, anchor="n")
+    e3.place(x=980.0, y=360.0, anchor="n")
 
     e4 = tk.Checkbutton(window, text=editors[3], variable=d2e4)
     e4.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
-    e4.place(x=500.0, y=600.0, anchor="n")
+    e4.place(x=470.0, y=403.0, anchor="n")
 
     e5 = tk.Checkbutton(window, text=editors[4], variable=d2e5)
     e5.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
-    e5.place(x=725.0, y=600.0, anchor="n")
+    e5.place(x=725.0, y=403.0, anchor="n")
 
     e6 = tk.Checkbutton(window, text=editors[5], variable=d2e6)
     e6.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
-    e6.place(x=950.0, y=600.0, anchor="n")
+    e6.place(x=980.0, y=403.0, anchor="n")
+
+    e7 = tk.Checkbutton(window, text=editors[6], variable=d2e7)
+    e7.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
+    e7.place(x=470.0, y=446.0, anchor="n")
+
+    e8 = tk.Checkbutton(window, text=editors[7], variable=d2e8)
+    e8.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
+    e8.place(x=725.0, y=446.0, anchor="n")
+
+    e9 = tk.Checkbutton(window, text=editors[8], variable=d2e9)
+    e9.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
+    e9.place(x=980.0, y=446.0, anchor="n")
+
+    e10 = tk.Checkbutton(window, text=editors[9], variable=d2e10)
+    e10.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
+    e10.place(x=470.0, y=488.0, anchor="n")
+
+    e11 = tk.Checkbutton(window, text=editors[10], variable=d2e11)
+    e11.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
+    e11.place(x=725.0, y=488.0, anchor="n")
+
+    e12 = tk.Checkbutton(window, text=editors[11], variable=d2e12)
+    e12.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
+    e12.place(x=980.0, y=488.0, anchor="n")
 
     editor_names_var = tk.StringVar()
-    editor_names = tk.Entry(window, textvariable=editor_names_var, font=("Roboto Mono", 10), width=80)
+    editor_names = tk.Entry(window, textvariable=editor_names_var, font=("Roboto Mono", 10), width=100)
     editor_names.insert(0, f"Type names here")
     editor_names.tk_setPalette(background="#FFFFFF")
     editor_names.focus_set()
-    editor_names.place(x=725.0, y=520, anchor="n")
+    editor_names.place(x=725.0, y=590, anchor="n")
 
-    delegating_to_message = canvas.create_text(725, 340, text=f"Delegating to nobody", anchor="n", width=850,
+    delegating_to_message = canvas.create_text(725, 181, text=f"Delegating to nobody", anchor="s", width=800,
                                                fill="#37352F", font=("Roboto Mono", 15 * -1), justify="center")
 
     button_image_1 = tk.PhotoImage(file=asset_relative_path("begin_btn.png"))
@@ -706,13 +724,13 @@ def delegate(selected_folder=""):
                          command=lambda: operation_in_progress("Delegating", folder=selected_folder), relief="flat")
     button_1.place(x=1040.0, y=640.0, width=125.0, height=35.0)
 
-    canvas.after(20, lambda: check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4, d2e5, d2e6,
+    canvas.after(20, lambda: check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4, d2e5, d2e6, d2e7, d2e8, d2e9, d2e10, d2e11, d2e12,
                                                     editors, editor_names_var, images_per_person_message, button_1))
 
     window.mainloop()
 
 
-def check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4, d2e5, d2e6, editors, entered_editors, images_per_person_message, start_button):
+def check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4, d2e5, d2e6, d2e7, d2e8, d2e9, d2e10, d2e11, d2e12, editors, entered_editors, images_per_person_message, start_button):
     global delegating_to
     delegating_to = []
 
@@ -728,6 +746,18 @@ def check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4
         delegating_to.append(editors[4].lower())
     if d2e6.get() == 1 and editors[5] != "Save an editor to this list from settings":
         delegating_to.append(editors[5].lower())
+    if d2e7.get() == 1 and editors[6] != "Save an editor to this list from settings":
+        delegating_to.append(editors[6].lower())
+    if d2e8.get() == 1 and editors[7] != "Save an editor to this list from settings":
+        delegating_to.append(editors[7].lower())
+    if d2e9.get() == 1 and editors[8] != "Save an editor to this list from settings":
+        delegating_to.append(editors[8].lower())
+    if d2e10.get() == 1 and editors[9] != "Save an editor to this list from settings":
+        delegating_to.append(editors[9].lower())
+    if d2e11.get() == 1 and editors[10] != "Save an editor to this list from settings":
+        delegating_to.append(editors[10].lower())
+    if d2e12.get() == 1 and editors[11] != "Save an editor to this list from settings":
+        delegating_to.append(editors[11].lower())
 
     additional_editors = entered_editors.get().split(",")
     for i in additional_editors:
@@ -756,7 +786,7 @@ def check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4
                           text=f"Total Images: {total_files}  |  About {round(total_files / len(delegating_to))} images per person")
         start_button["state"] = "normal"
 
-    canvas.after(50, lambda: check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4, d2e5, d2e6,
+    canvas.after(50, lambda: check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4, d2e5, d2e6, d2e7, d2e8, d2e9, d2e10, d2e11, d2e12,
                                                     editors, entered_editors, images_per_person_message, start_button))
 
 
@@ -980,21 +1010,21 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
                     if exposure_check == "underexposed":
                         output = os.path.join(os.path.join(output, "Rejects"), "Underexposed")
                         reject = True
+                        message += f"underexposed and rejected "
+
                     elif exposure_check == "overexposed":
                         output = os.path.join(os.path.join(output, "Rejects"), "Overexposed")
                         reject = True
-                        message += f"{exposure_check} and rejected"
+                        message += f"overexposed and rejected "
 
-                    if reject:
-                        message += f"{exposure_check} and rejected"
-                    else:
-                        message += f"{exposure_check} and not rejected"
+                if not reject:
+                    message += "not rejected "
 
                 if colour.get() == 1 and not reject:
                     colour_dominance = digest_functions.check_colour(image_preview)
                     if colour_dominance != "not colour dominant":
                         output = os.path.join(output, colour_dominance)
-                    message += f" ({colour_dominance})"
+                    message += f"({colour_dominance})"
 
                 del image_preview
             else:

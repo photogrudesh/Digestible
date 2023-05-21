@@ -71,12 +71,12 @@ def check_exposure(colour_image):
 
 
 def check_colour(image):
-    # resized = image.resize((1, 1))
-    # dominant_rgb = resized.getpixel((0, 0))
+    resized = image.resize((1, 1))
+    dominant_rgb = resized.getpixel((0, 0))
 
-    image.save(asset_relative_path("thumbnail.jpg"))
-    extracted_colour = Ct(asset_relative_path("thumbnail.jpg"))
-    dominant_rgb = extracted_colour.get_color(quality=1)
+    # image.save(asset_relative_path("thumbnail.jpg"))
+    # extracted_colour = Ct(asset_relative_path("thumbnail.jpg"))
+    # dominant_rgb = extracted_colour.get_color(quality=1)
 
     colour_deg = [0, 45, 90, 120, 180, 210, 240, 270, 300, 400]
     colour_name = ["Red", "Orange", "Green", "Green", "Light Blue", "Light Blue", "Blue", "Purple", "Purple", "Red"]
@@ -119,17 +119,15 @@ def check_colour(image):
         for y in range(image.height):
             for x in range(image.width):
                 this_pixel = image.getpixel((x, y))
-                hue = colorsys.rgb_to_hsv(this_pixel[0], this_pixel[1], this_pixel[2])[0]
-                if abs(hue - colour_deg[min_index]) < 20:
+                hue = colorsys.rgb_to_hsv(this_pixel[0]/255, this_pixel[1]/255, this_pixel[2]/255)[0]
+                if abs(hue * 360 - colour_deg[min_index]) < 20:
                     num_close += 1
 
-        if num_close > 9000:
+        if num_close > 6000 and min_dist < 15 and hsv[1] > 20:
             colour_dominance = colour_name[min_index]
 
     print(dominant_rgb, hsv, colour_dominance)
-
-    del extracted_colour
-
+    image.close()
 
     return colour_dominance
 
