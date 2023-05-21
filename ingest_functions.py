@@ -11,7 +11,7 @@ def ingest_image(activity_list, body, optics, orientation, current_image, root, 
     ingest_failed = False
 
     output = ""
-    message = "Image shot with "
+    message = "Shot on "
 
     if body.get() == 0 and optics.get() == 0 and orientation.get() == 0:
         pass
@@ -93,6 +93,8 @@ def ingest_image(activity_list, body, optics, orientation, current_image, root, 
                 os.rename(original_backup_file_dir, final_backup_dir)
 
         except FileNotFoundError:
+            pass
+        except FileExistsError:
             pass
 
     if body_name == "unknown body" and lens_name == "unknown lens" and orientation_str == "unknown":

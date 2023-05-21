@@ -56,7 +56,6 @@ def asset_relative_path(path):
     return full_path
 
 
-
 def write(config_file):
     with open('./config.dgstbl', 'w') as configfile:
         config_file.write(configfile)
