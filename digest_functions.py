@@ -1,6 +1,6 @@
-import numpy
 import colorsys
 from PIL import Image
+import numpy
 import rawpy
 import cv2
 from colorthief import ColorThief as Ct

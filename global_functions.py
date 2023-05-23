@@ -83,4 +83,3 @@ def collect_inputs():
 def make_btn_reactive(button_object, hover_colour, default_colour):
     button_object.bind("<Enter>", func=lambda: button_object.config(background=hover_colour))
     button_object.bind("<Leave>", func=lambda: button_object.config(background=default_colour))
-
