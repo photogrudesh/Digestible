@@ -437,6 +437,9 @@ def ingest():
 
     canvas.create_text(655, 653, text="Ingest Name:", anchor="nw", font=("Roboto Mono", 14 * -1), fill="#37352F")
 
+    canvas.create_text(725, 220, anchor="n", justify="center", text="Ingest Mode\n\nDesigned to simplify your ingest processes, Digestible will automatically look through your storage devices for RAW image formats and copy them over to your specified output folder.\n\nYou have three options: body, optics and orientation. Digestible will look at the image's exif information and determine where to place the files on your local disk.", fill="#37352F",
+                                        font=("Roboto Mono", 16 * -1), width=820)
+
     ingest_name_var = tk.StringVar()
     ingest_name = tk.Entry(window, textvariable=ingest_name_var, font=("Roboto Mono", 10), width=30)
     ingest_name.insert(0, f"{default_name}")
@@ -496,6 +499,7 @@ def digest():
 
     try:
         if "Digested Images" in os.listdir(selected_digest_dir):
+            selected_digest_dir = ""
             main('Folder has already been digested, delete the "Digested Images" folder to try again')
     except FileNotFoundError:
         selected_digest_dir = ""
@@ -510,6 +514,7 @@ def digest():
     total_files = len(image_list)
 
     if len(image_list) == 0:
+        selected_digest_dir = ""
         main("No files to digest")
 
     canvas = clear_screen(window)
@@ -551,15 +556,15 @@ def digest():
     # SIDEBAR
 
     if len(image_list) > 500:
-        canvas.create_text(725.0, 108.0, anchor="n", text=f"{str(total_files)} files to digest. This may take a while",
+        canvas.create_text(725.0, 590.0, anchor="n", text=f"{str(total_files)} files to digest. This may take a while",
                            fill="#37352F", font=("Roboto Mono", 16 * -1))
     else:
-        canvas.create_text(400.0, 108.0, anchor="n", text=f"{str(total_files)} files to digest.", fill="#FFFFFF",
+        canvas.create_text(400.0, 590.0, anchor="n", text=f"{str(total_files)} files to digest.", fill="#FFFFFF",
                            font=("Roboto Mono", 16 * -1))
 
     canvas.create_text(725, 180, anchor="n",
-                       text="\nWelcome to Digest. This should be the second part of your improved post-production workflow, After ingesting, you might want to cull through the images you've just taken, but why bother doing that yourself. The digest mode has 3 options: Colour dominance, Exposure and Blur. \n\nExposure is the simplest and most common reason for an unusable image, Digestible will identify and remove any irrecoverably underexposed or overexposed images from your ingest folder. Digestible may misidentify images if shot intentionally in low light.\n\nThe blur option will identify unusable images based on how blurry the image is. Use with caution if images are intentionally blurry (e.g. panning action shots).\n\nFinally the colour dominance option will split images based on the colour that is most dominant in the frame. \n\nRemember digest mode is not human and errors in image identification may occur.\n\nHappy Digesting!",
-                       width=800, font=("Roboto Mono", 12), fill="#37352F")
+                       text="\nWelcome to Digest. This should be the second part of your improved post-production workflow, After ingesting, you might want to cull through the images you've just taken, but why bother doing that yourself. The digest mode has 3 options: Colour dominance, Exposure and Blur. \n\nExposure is the simplest and most common reason for an unusable image, Digestible will identify and remove any irrecoverably underexposed or overexposed images from your ingest folder. Be careful when digesting images if shot intentionally in low light.\n\nThe blur option will identify unusable images based on how blurry the image is. Use with caution if images are intentionally blurry (e.g. panning action shots).\n\nFinally the colour dominance option will split images based on the colour that is most dominant in the frame. \n\nRemember digest mode is not human and does not perceive colour the same way you do.\n\nHappy Digesting!",
+                       width=800, font=("Roboto Mono", 14 * -1), fill="#37352F")
 
     canvas.create_text(300.0, 645.0, anchor="nw", text="Options:", fill="#37352F", font=("Roboto Mono", 16 * -1))
 
@@ -586,7 +591,7 @@ def digest():
             file_path = file_path[:-1] + ''
         file_path += "..."
 
-    canvas.create_text(725.0, 140.0, anchor="n", text=f"Digesting from: {file_path}",
+    canvas.create_text(725.0, 135.0, anchor="n", text=f"Digesting from: {file_path}",
                        fill="#37352F",
                        font=("Roboto Mono", 18 * -1))
 
@@ -646,6 +651,7 @@ def delegate():
         selected_delegation_dir = os.path.join(selected_delegation_dir, "Digested Images")
 
     if "Delegated Images" in os.listdir(selected_delegation_dir):
+        selected_delegation_dir = ""
         main('Folder has already been delegated, delete the "Delegated Images" folder to try again')
 
     for root, dirs, files in os.walk(selected_delegation_dir):
@@ -658,6 +664,7 @@ def delegate():
     total_files = len(image_list)
 
     if len(image_list) == 0:
+        selected_delegation_dir = ""
         main("No files to delegate")
 
     canvas = clear_screen(window)
@@ -1236,10 +1243,7 @@ def main(message=""):
 
     write(config)
 
-    if message:
-        window.after(5000, lambda: canvas.itemconfig(change_message, text=""))
-
-    change_message = canvas.create_text(290, 670, anchor="sw", justify="left", text=message, fill="#37352F",
+    canvas.create_text(290, 670, anchor="sw", justify="left", text=message, fill="#FF0000",
                                         font=("Roboto Mono", 16 * -1), width=350)
 
     banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets()
