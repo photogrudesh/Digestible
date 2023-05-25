@@ -69,9 +69,10 @@ def settings():
     banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets()
 
     canvas.create_image(250, 0, image=banner, anchor="nw")
-    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Courier", 26 * -1))
+    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Courier", 26 * -1, "bold"))
+
     canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
-    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26 * -1))
+    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26 * -1, "bold"))
     main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(),
                          relief="flat", bg="#F7FBFB", anchor="nw", padx=0, pady=0)
     main_btn.place(x=0.0, y=135.0, width=249.0, height=35.0)
@@ -237,9 +238,10 @@ def help_menu():
     banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets()
 
     canvas.create_image(250, 0, image=banner, anchor="nw")
-    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Courier", 26 * -1))
+    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Courier", 26 * -1, "bold"))
+
     canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
-    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26 * -1))
+    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26 * -1, "bold"))
     main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(),
                          relief="flat", bg="#F7FBFB", anchor="nw", padx=0, pady=0)
     main_btn.place(x=0.0, y=135.0, width=249.0, height=35.0)
@@ -347,9 +349,10 @@ def ingest():
     banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets()
 
     canvas.create_image(250, 0, image=banner, anchor="nw")
-    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Courier", 26 * -1))
+    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Courier", 26 * -1, "bold"))
+
     canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
-    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26 * -1))
+    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26 * -1, "bold"))
     main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(),
                          relief="flat", bg="#F7FBFB", anchor="nw", padx=0, pady=0)
     main_btn.place(x=0.0, y=135.0, width=249.0, height=35.0)
@@ -524,9 +527,10 @@ def digest():
     banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets()
 
     canvas.create_image(250, 0, image=banner, anchor="nw")
-    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Courier", 26 * -1))
+    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Courier", 26 * -1, "bold"))
+
     canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
-    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26 * -1))
+    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26 * -1, "bold"))
     main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(),
                          relief="flat", bg="#F7FBFB", anchor="nw", padx=0, pady=0)
     main_btn.place(x=0.0, y=135.0, width=249.0, height=35.0)
@@ -674,9 +678,10 @@ def delegate():
     banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets()
 
     canvas.create_image(250, 0, image=banner, anchor="nw")
-    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Courier", 26 * -1))
+    canvas.create_text(300.0, 34.0, anchor="nw", text=banner_text, fill="#F5F5F5", font=("Courier", 26 * -1, "bold"))
+
     canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
-    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26 * -1))
+    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26 * -1, "bold"))
     main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(),
                          relief="flat", bg="#F7FBFB", anchor="nw", padx=0, pady=0)
     main_btn.place(x=0.0, y=135.0, width=249.0, height=35.0)
@@ -918,7 +923,7 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
     canvas.create_image(250, 0, image=banner, anchor="nw")
     canvas.create_text(300.0, 34.0, anchor="nw", text=operation_type, fill="#F5F5F5", font=("Courier", 26 * -1))
     canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
-    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26 * -1))
+    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26 * -1, "bold"))
     main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(),
                          relief="flat", bg="#F7FBFB", anchor="nw", padx=0, pady=0, state="disabled")
     main_btn.place(x=0.0, y=135.0, width=249.0, height=35.0)
@@ -1249,7 +1254,7 @@ def main(message=""):
     banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets()
 
     canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
-    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26))
+    canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26 * -1, "bold"))
     main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(),
                          relief="flat", bg="#F7FBFB", anchor="nw", padx=0, pady=0)
     main_btn.place(x=0.0, y=135.0, width=249.0, height=35.0)
