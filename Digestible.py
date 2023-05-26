@@ -28,16 +28,17 @@ window.configure(bg="#FFFFFF")
 window.resizable(False, False)
 config = configparser.ConfigParser()
 version_number = "Digestible v0.3.1"
-# pyglet.font.add_file(asset_relative_path("Courier.ttf"))
 
 if os.name == "nt":
     # from win10toast import ToastNotifier
     # notify = ToastNotifier()
-    window.iconbitmap(asset_relative_path("Digestible Icon.ico"))
+    print("nt")
+else:
     pass
-elif os.name == "posix":
-    icon_image = tk.Image("photo", file=asset_relative_path("Digestible Icon.png"))
-    window.tk.call('wm', 'iconphoto', window._w, icon_image)
+
+window.iconbitmap(asset_relative_path("Digestible Icon.ico"))
+icon_image = tk.Image("photo", file=asset_relative_path("Digestible Icon.png"))
+window.tk.call('wm', 'iconphoto', window._w, icon_image)
 
 image_list = []
 file_names = []
@@ -509,13 +510,13 @@ def digest():
     image_list = []
     file_names = []
 
-    try:
-        if "Digested Images" in os.listdir(selected_digest_dir):
-            selected_digest_dir = ""
-            main('Folder has already been digested, delete the "Digested Images" folder to try again')
-    except FileNotFoundError:
+    if not os.path.exists(selected_delegation_dir):
         selected_digest_dir = ""
-        main(f"{selected_digest_dir} is missing or damaged")
+        main("Digest folder missing or destroyed")
+
+    if "Digested Images" in os.listdir(selected_digest_dir):
+        selected_digest_dir = ""
+        main('Folder has already been digested, delete the "Digested Images" folder to try again')
 
     for root, dirs, files in os.walk(selected_digest_dir):
 
@@ -658,6 +659,10 @@ def delegate():
     file_names = []
     files_to_delegate = 0
     digested_found = False
+
+    if not os.path.exists(selected_delegation_dir):
+        selected_delegation_dir = ""
+        main("Delegate folder missing or destroyed")
 
     if "Digested Images" in os.listdir(selected_delegation_dir):
         digested_found = True
