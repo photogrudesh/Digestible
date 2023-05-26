@@ -102,7 +102,7 @@ def settings():
     # SIDEBAR
 
     canvas.create_text(300, 140, text="Ingest Output Preferences", anchor="nw", fill="#37352F",
-                       font=("Courier", 15))
+                       font=("Courier", 22 * -1, "bold"))
 
     output_img = tk.PhotoImage(file=asset_relative_path("main_output_btn.png"))
     add_default_output = tk.Button(image=output_img, bg="#FFFFFF", command=lambda: add_dir(default=True), anchor="nw",
@@ -114,10 +114,19 @@ def settings():
                                   borderwidth=0, highlightthickness=0, relief="flat", padx=0, pady=0)
     add_backup_output.place(x=570, y=180, width=249, height=35)
 
+    try:
+        output = config['program']['default output']
+    except KeyError:
+        output = "Not set"
+
+    try:
+        backup = config['program']['backup output']
+    except KeyError:
+        backup = "Not set"
+
     canvas.create_text(300, 230,
-                       text="Ingests will be saved to your output folder and your backup folder simultaneously if available",
-                       anchor="nw", fill="#37352F",
-                       font=("Courier", 14 * -1))
+                       text=f"Current output: {output} Current backup: {backup}\n\nIngests will be saved to your output folder and your backup folder simultaneously if available.",
+                       anchor="nw", fill="#37352F", width=870, font=("Courier", 16 * -1))
 
     if not config.has_option("Program", "saved editors"):
         config["Program"]["saved editors"] = ""
@@ -130,16 +139,16 @@ def settings():
     except ValueError:
         pass
 
-    canvas.create_text(300, 290, text=f"Delegate Speed Dial: {12 - len(editors)} slots left", anchor="nw",
-                       fill="#37352F", font=("Courier", 15))
+    canvas.create_text(300, 320, text=f"Delegate Speed Dial: {12 - len(editors)} slots left", anchor="nw",
+                       fill="#37352F", font=("Courier", 22 * -1, "bold"))
 
     if len(editors) == 0:
-        canvas.create_text(300, 330,
+        canvas.create_text(300, 360,
                            text="Save up to 12 frequently delegated to editors on delegate speed dial by adding names below!",
                            anchor="nw", fill="#37352F",
                            font=("Courier", 11), width=850)
     else:
-        canvas.create_text(300, 330, text=f"{str(editors).replace('[', '').replace(']', '')}", anchor="nw",
+        canvas.create_text(300, 360, text=f"{str(editors).replace('[', '').replace(']', '')}", anchor="nw",
                            fill="#37352F",
                            font=("Courier", 11), width=850)
 
@@ -153,15 +162,15 @@ def settings():
     editors_to_add.insert(0, f"{placeholder_text}")
     editors_to_add.tk_setPalette(background="#FFFFFF")
     editors_to_add.focus_set()
-    editors_to_add.place(x=300.0, y=410)
+    editors_to_add.place(x=300.0, y=440)
 
-    canvas.create_text(300, 450, text=f"Alter your saved editors by adding names separated by commas.", anchor="nw",
+    canvas.create_text(300, 480, text=f"Alter your saved editors by adding names separated by commas.", anchor="nw",
                        fill="#37352F", font=("Courier", 14 * -1))
 
     update_image = tk.PhotoImage(file=asset_relative_path("update_btn.png"))
     update_editors = tk.Button(image=update_image, command=lambda: add_editors(new_editors_var), borderwidth=0,
                                highlightthickness=0, relief="flat", bg="#FFFFFF", anchor="w")
-    update_editors.place(x=972.0, y=403, width=125, height=35)
+    update_editors.place(x=972.0, y=433, width=125, height=35)
 
     window.mainloop()
 
@@ -271,8 +280,8 @@ def help_menu():
     # SIDEBAR
 
     canvas.create_text(725, 150, anchor="n",
-                       text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nIngest mode: This mode copies images from cards under 100GB in size to your computer while automatically sorting images by camera body, lens used, and orientation so you don't have to.\n\nAfter you've ingested your images, it's time to start culling!\nDigest mode: This mode automatically separates your images based on how usable they are by analysing exposure and blurriness\n\nDelegate: Once you've sorted your images, it's time to delegate them to your team for post-production. This mode splits the sorted images between editors evenly so post-production can begin as soon as possible.",
-                       width=800, font=("Courier", 16 * -1), fill="#37352F")
+                       text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nIngest mode: This mode copies images from cards under 100GB in size to your computer while automatically sorting images by camera body, lens used, and orientation so you don't have to.\n\nAfter you've ingested your images, it's time to start culling!\n\nDigest mode: This mode automatically separates your images based on how usable they are by analysing exposure and blurriness\n\nDelegate: Once you've sorted your images, it's time to delegate them to your team for post-production. This mode splits the sorted images between editors evenly so post-production can begin as soon as possible.",
+                       width=800, font=("Courier", 18 * -1), fill="#37352F")
 
     window.mainloop()
 
@@ -921,7 +930,7 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
     banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets()
 
     canvas.create_image(250, 0, image=banner, anchor="nw")
-    canvas.create_text(300.0, 34.0, anchor="nw", text=operation_type, fill="#F5F5F5", font=("Courier", 26 * -1))
+    canvas.create_text(300.0, 34.0, anchor="nw", text=operation_type, fill="#F5F5F5", font=("Courier", 26 * -1, "bold"))
     canvas.create_rectangle(0, 0, 250, 700, fill="#F7FBFB", outline="")
     canvas.create_text(32.0, 34.0, anchor="nw", text="Digestible", fill="#37352F", font=("Courier", 26 * -1, "bold"))
     main_btn = tk.Button(image=button_image_home, borderwidth=0, highlightthickness=0, command=lambda: main(),
