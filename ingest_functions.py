@@ -77,6 +77,8 @@ def ingest_image(activity_list, body, optics, orientation, current_image, root, 
             os.rename(original_output_file_dir, final_dir)
     except FileNotFoundError:
         ingest_failed = True
+    except PermissionError:
+        ingest_failed = True
 
     if backup_root != "":
         try:

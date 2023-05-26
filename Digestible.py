@@ -116,17 +116,17 @@ def settings():
     add_backup_output.place(x=570, y=180, width=249, height=35)
 
     try:
-        output = config['program']['default output']
+        output = config['Program']['default output']
     except KeyError:
         output = "Not set"
 
     try:
-        backup = config['program']['backup output']
+        backup = config['Program']['backup output']
     except KeyError:
         backup = "Not set"
 
     canvas.create_text(300, 230,
-                       text=f"Current output: {output} Current backup: {backup}\n\nIngests will be saved to your output folder and your backup folder simultaneously if available.",
+                       text=f"Current output: {output} \nCurrent backup: {backup}\n\nIngests will be saved to your output folder and your backup folder simultaneously.",
                        anchor="nw", fill="#37352F", width=870, font=("Courier", 16 * -1))
 
     if not config.has_option("Program", "saved editors"):
@@ -140,18 +140,18 @@ def settings():
     except ValueError:
         pass
 
-    canvas.create_text(300, 320, text=f"Delegate Speed Dial: {12 - len(editors)} slots left", anchor="nw",
+    canvas.create_text(300, 355, text=f"Delegate Speed Dial: {12 - len(editors)} slots left", anchor="nw",
                        fill="#37352F", font=("Courier", 22 * -1, "bold"))
 
     if len(editors) == 0:
-        canvas.create_text(300, 360,
+        canvas.create_text(300, 395,
                            text="Save up to 12 frequently delegated to editors on delegate speed dial by adding names below!",
                            anchor="nw", fill="#37352F",
-                           font=("Courier", 11), width=850)
+                           font=("Courier", 16 * -1), width=850)
     else:
-        canvas.create_text(300, 360, text=f"{str(editors).replace('[', '').replace(']', '')}", anchor="nw",
+        canvas.create_text(300, 395, text=f"{str(editors).replace('[', '').replace(']', '')}", anchor="nw",
                            fill="#37352F",
-                           font=("Courier", 11), width=850)
+                           font=("Courier", 16 * -1), width=850)
 
     if len(editors) == 0:
         placeholder_text = "Save some editors"
@@ -163,15 +163,15 @@ def settings():
     editors_to_add.insert(0, f"{placeholder_text}")
     editors_to_add.tk_setPalette(background="#FFFFFF")
     editors_to_add.focus_set()
-    editors_to_add.place(x=300.0, y=440)
+    editors_to_add.place(x=300.0, y=475)
 
-    canvas.create_text(300, 480, text=f"Alter your saved editors by adding names separated by commas.", anchor="nw",
-                       fill="#37352F", font=("Courier", 14 * -1))
+    canvas.create_text(300, 515, text=f"Alter your saved editors by adding names separated by commas.", anchor="nw",
+                       fill="#37352F", font=("Courier", 16 * -1))
 
     update_image = tk.PhotoImage(file=asset_relative_path("update_btn.png"))
     update_editors = tk.Button(image=update_image, command=lambda: add_editors(new_editors_var), borderwidth=0,
                                highlightthickness=0, relief="flat", bg="#FFFFFF", anchor="w")
-    update_editors.place(x=972.0, y=433, width=125, height=35)
+    update_editors.place(x=972.0, y=468, width=125, height=35)
 
     window.mainloop()
 
@@ -281,7 +281,7 @@ def help_menu():
     # SIDEBAR
 
     canvas.create_text(725, 150, anchor="n",
-                       text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nIngest mode: This mode copies images from cards under 100GB in size to your computer while automatically sorting images by camera body, lens used, and orientation so you don't have to.\n\nAfter you've ingested your images, it's time to start culling!\n\nDigest mode: This mode automatically separates your images based on how usable they are by analysing exposure and blurriness\n\nDelegate: Once you've sorted your images, it's time to delegate them to your team for post-production. This mode splits the sorted images between editors evenly so post-production can begin as soon as possible.",
+                       text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nIngest mode: This mode copies images from cards under 100GB in size to your computer while automatically sorting images by camera body, lens used, and orientation so you don't have to.\n\nAfter you've ingested your images, it's time to start culling!\n\nDigest mode: This mode automatically separates your images based on how usable they are by analysing exposure and blurriness\n\nDelegate: Once you've sorted your images, it's time to delegate them to your team for post-production. This mode splits the sorted images between editors evenly so post-production can begin as soon as possible.\n\nRemember Digestible is designed for use with RAW image formats exclusively and will not function with JPEGs.",
                        width=800, font=("Courier", 18 * -1), fill="#37352F")
 
     window.mainloop()
@@ -510,7 +510,7 @@ def digest():
     image_list = []
     file_names = []
 
-    if not os.path.exists(selected_delegation_dir):
+    if not os.path.exists(selected_digest_dir):
         selected_digest_dir = ""
         main("Digest folder missing or destroyed")
 
@@ -1096,7 +1096,8 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
         except KeyError:
             pass
 
-        ingest_image(activity_list, body, optics, orientation, current_image, root, name, current_file, backup_root)
+        if ingest_image(activity_list, body, optics, orientation, current_image, root, name, current_file, backup_root):
+            main("Ingest aborted")
 
         progress["value"] = 100 - len(image_list) / total_files * 100
 
@@ -1172,6 +1173,8 @@ def process_image(canvas, operation_type, progress, activity_list, colour=None, 
                 os.makedirs(output)
 
             shutil.copy2(current_image, os.path.join(output, current_file))
+        except PermissionError:
+            main("Digest aborted, check your permissions to edit this folder")
         except OSError:
             pass
 
@@ -1263,7 +1266,7 @@ def main(message=""):
     write(config)
 
     canvas.create_text(290, 670, anchor="sw", justify="left", text=message, fill="#FF0000",
-                                        font=("Courier", 16 * -1), width=350)
+                                        font=("Courier", 16 * -1, "bold"), width=350)
 
     banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets()
 
