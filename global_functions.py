@@ -69,7 +69,7 @@ def collect_inputs():
         try:
             if psutil.disk_usage(i.mountpoint).total > 100000000000:
                 add_volume = False
-            if os.name == "posix" and i.mountpoint.startswith("/System"):
+            if os.name == "posix" and i.mountpoint.startswith("/System") or i.mountpoint == "/":
                 add_volume = False
 
             if add_volume:

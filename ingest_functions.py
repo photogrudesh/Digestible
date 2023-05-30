@@ -65,42 +65,46 @@ def ingest_image(activity_list, body, optics, orientation, current_image, root, 
 
     main_out = os.path.join(root, output)
 
-    try:
-        if not os.path.isdir(main_out):
-            os.makedirs(main_out)
+    if os.path.isfile(os.path.join(main_out, current_file)) or os.path.isfile(os.path.join(main_out, name)):
+        message = f"{current_file}: Skipped image as it already exists in the output folder"
+    else:
 
-        shutil.copy2(current_image, main_out)
-
-        if name != "" and not os.path.exists(os.path.join(main_out, name)):
-            original_output_file_dir = os.path.join(main_out, current_file)
-            final_dir = os.path.join(main_out, name)
-            os.rename(original_output_file_dir, final_dir)
-    except FileNotFoundError:
-        ingest_failed = True
-    except PermissionError:
-        ingest_failed = True
-
-    if backup_root != "":
         try:
-            backup_out = os.path.join(backup_root, output)
+            if not os.path.isdir(main_out):
+                os.makedirs(main_out)
 
-            if not os.path.exists(backup_out):
-                os.makedirs(backup_out)
+            shutil.copy2(current_image, main_out)
 
-            shutil.copy2(current_image, backup_out)
-
-            if name != "":
-                original_backup_file_dir = os.path.join(backup_out, current_file)
-                final_backup_dir = os.path.join(backup_out, name)
-                os.rename(original_backup_file_dir, final_backup_dir)
-
+            if name != "" and not os.path.exists(os.path.join(main_out, name)):
+                original_output_file_dir = os.path.join(main_out, current_file)
+                final_dir = os.path.join(main_out, name)
+                os.rename(original_output_file_dir, final_dir)
         except FileNotFoundError:
-            pass
-        except FileExistsError:
-            pass
+            ingest_failed = True
+        except PermissionError:
+            ingest_failed = True
 
-    if body_name == "unknown body" and lens_name == "unknown lens" and orientation_str == "unknown":
-        message = "Unsorted (No image data)"
+        if backup_root != "":
+            try:
+                backup_out = os.path.join(backup_root, output)
+
+                if not os.path.exists(backup_out):
+                    os.makedirs(backup_out)
+
+                shutil.copy2(current_image, backup_out)
+
+                if name != "":
+                    original_backup_file_dir = os.path.join(backup_out, current_file)
+                    final_backup_dir = os.path.join(backup_out, name)
+                    os.rename(original_backup_file_dir, final_backup_dir)
+
+            except FileNotFoundError:
+                pass
+            except FileExistsError:
+                pass
+
+        if body_name == "unknown body" and lens_name == "unknown lens" and orientation_str == "unknown":
+            message = "Unsorted (No image data)"
 
     activity_list.insert(next_index, f"{current_file}: {message}")
     activity_list.yview_scroll(1, "unit")

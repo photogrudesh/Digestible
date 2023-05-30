@@ -1,9 +1,11 @@
 import colorsys
+import os
+
 from PIL import Image
 import numpy
 import rawpy
 import cv2
-from colorthief import ColorThief as Ct
+import tkinter as tk
 
 from global_functions import asset_relative_path
 
@@ -13,7 +15,7 @@ def get_thumbnail(image):
         raw = rawpy.imread(image)
         rgb = raw.postprocess()
         thumbnail_image = Image.fromarray(rgb)  # Pillow image
-        thumbnail_image = thumbnail_image.resize((150, 120))
+        thumbnail_image = thumbnail_image.resize((round(thumbnail_image.width / 5), round(thumbnail_image.height / 5)))
         del raw
         del rgb
     except rawpy._rawpy.LibRawFileUnsupportedError:
@@ -24,6 +26,7 @@ def get_thumbnail(image):
 
 def check_exposure(colour_image):
     exposure = "exposed correctly"
+    colour_image = colour_image.resize((150, 120))
     bw_image = colour_image.convert("L")
 
     histogram = [0, 0, 0, 0, 0, 0, 0]
@@ -132,6 +135,66 @@ def check_colour(image):
     return colour_dominance
 
 
+def get_image_contents(image, detector, predictor):
+    image.save(asset_relative_path("thumbnail.jpg"))
+    input_im = asset_relative_path("thumbnail.jpg")
+
+    detections = detector.detectObjectsFromImage(
+        input_image=input_im,
+        output_image_path=asset_relative_path("taste_output.jpg"),
+        minimum_percentage_probability=30
+    )
+
+    objects_present = []
+    persons_present = 0
+    person_area = 0
+    classification = "Unclassified"
+
+    for current_object in detections:
+        print(current_object["name"], " : ", current_object["percentage_probability"])
+        if current_object["name"] == "person" and current_object["percentage_probability"] > 95:
+            persons_present += 1
+
+            area = (current_object["box_points"][2] - current_object["box_points"][0]) * (
+                        current_object["box_points"][3] - current_object["box_points"][1])
+
+            person_area += area
+            print(area)
+        else:
+            objects_present.append(current_object["name"])
+
+    if persons_present == 1 and person_area > 0.8 * image.height * image.width:
+        classification = "Portrait"
+    elif persons_present > 6 and person_area > 0.7 * image.height * image.width:
+        classification = "Group Photo"
+    elif persons_present > 0:
+        classification = f"People present"
+    elif len(objects_present) > 0:
+        classification = f"{objects_present[0]}"
+
+    if classification == "Unclassified":
+        prediction, probability = predictor.classifyImage(
+            input_im, result_count=1
+        )
+
+        if probability[0] > 90:
+            classification = prediction[0]
+
+        if prediction[0] == "person":
+            classification = f"People present"
+
+    ratio = 200 / image.width
+
+    if os.path.isfile(asset_relative_path("taste_output.jpg")):
+        preview = Image.open(asset_relative_path("taste_output.jpg")).resize((200, round(ratio * image.height)))
+        preview.save(asset_relative_path("preview.png"))
+    else:
+        preview = image.resize((200, round(ratio * image.height)))
+        preview.save(asset_relative_path("preview.png"))
+
+    return classification
+
+
 def check_image_blur(image):
     image.convert('RGB')
     cv_img = numpy.array(image)
@@ -139,9 +202,10 @@ def check_image_blur(image):
     monochrome_file = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
     focus_index = cv2.Laplacian(monochrome_file, cv2.CV_64F).var()
 
-    if focus_index < 120:
+    if focus_index < 50:
         blur = True
     else:
         blur = False
+    print(focus_index)
 
     return blur
