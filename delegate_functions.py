@@ -9,6 +9,6 @@ def delegate_image(name, editor_folder, original_path):
         os.makedirs(editor_folder)
 
     try:
-        shutil.copy2(original_path, output)
+        shutil.move(original_path, output)
     except OSError:
         return "Failed"

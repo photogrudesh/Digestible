@@ -18,6 +18,7 @@ def get_thumbnail(image):
         thumbnail_image = thumbnail_image.resize((round(thumbnail_image.width / 5), round(thumbnail_image.height / 5)))
         del raw
         del rgb
+        thumbnail_image.save(asset_relative_path("preview.png"))
     except rawpy._rawpy.LibRawFileUnsupportedError:
         return "no thumbnail"
 
@@ -138,6 +139,7 @@ def check_colour(image):
 def get_image_contents(image, detector, predictor):
     image.save(asset_relative_path("thumbnail.jpg"))
     input_im = asset_relative_path("thumbnail.jpg")
+    taste_output_generated = False
 
     detections = detector.detectObjectsFromImage(
         input_image=input_im,
@@ -148,7 +150,7 @@ def get_image_contents(image, detector, predictor):
     objects_present = []
     persons_present = 0
     person_area = 0
-    classification = "Unclassified"
+    classification = ["Unclassified"]
 
     for current_object in detections:
         print(current_object["name"], " : ", current_object["percentage_probability"])
@@ -160,36 +162,42 @@ def get_image_contents(image, detector, predictor):
 
             person_area += area
             print(area)
-        else:
-            objects_present.append(current_object["name"])
+        elif current_object["percentage_probability"] > 95:
+            area = (current_object["box_points"][2] - current_object["box_points"][0]) * (
+                    current_object["box_points"][3] - current_object["box_points"][1])
+
+            if area > 0.2 * image.height * image.width:
+                objects_present.append(current_object["name"])
 
     if persons_present == 1 and person_area > 0.8 * image.height * image.width:
-        classification = "Portrait"
-    elif persons_present > 6 and person_area > 0.7 * image.height * image.width:
-        classification = "Group Photo"
+        classification = ["Portrait"]
+    elif persons_present > 3 and person_area > 0.7 * image.height * image.width:
+        classification = ["Group Photo"]
+    elif persons_present > 10:
+        classification = ["Many people present", persons_present]
     elif persons_present > 0:
-        classification = f"People present"
+        classification = ["People present", persons_present]
     elif len(objects_present) > 0:
-        classification = f"{objects_present[0]}"
+        classification = [f"{objects_present[0]}"]
 
-    if classification == "Unclassified":
+    if classification[0] == "Unclassified":
         prediction, probability = predictor.classifyImage(
             input_im, result_count=1
         )
 
         if probability[0] > 90:
-            classification = prediction[0]
+            classification[0] = prediction[0]
 
         if prediction[0] == "person":
-            classification = f"People present"
+            classification = ["People present", 1]
+    else:
+        taste_output_generated = True
 
-    ratio = 200 / image.width
-
-    if os.path.isfile(asset_relative_path("taste_output.jpg")):
-        preview = Image.open(asset_relative_path("taste_output.jpg")).resize((200, round(ratio * image.height)))
+    if taste_output_generated:
+        preview = Image.open(asset_relative_path("taste_output.jpg"))
         preview.save(asset_relative_path("preview.png"))
     else:
-        preview = image.resize((200, round(ratio * image.height)))
+        preview = image
         preview.save(asset_relative_path("preview.png"))
 
     return classification

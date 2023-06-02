@@ -31,28 +31,28 @@ def ingest_image(activity_list, body, optics, orientation, current_image, root, 
                 if body.get() == 1:
                     if "Image Model" in tags:
                         body_name = str(tags['Image Model']).strip()
+                        output = os.path.join(output, body_name.replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", ""))
                     else:
                         body_name = "unknown body"
 
-                    output = os.path.join(output, body_name.replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", ""))
                     message += f"{body_name} "
 
                 if optics.get() == 1:
                     if "EXIF LensModel" in tags:
                         lens_name = str(tags['EXIF LensModel']).strip()
+                        output = os.path.join(output, lens_name.replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", ""))
                     else:
                         lens_name = "unknown lens"
 
-                    output = os.path.join(output, lens_name.replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", ""))
                     message += f"with {lens_name} "
 
                 if orientation.get() == 1:
                     if "Image Orientation" in tags:
                         orientation_str = str(tags['Image Orientation']).strip()
+                        output = os.path.join(output, orientation_str.replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", ""))
                     else:
                         orientation_str = "unknown"
 
-                    output = os.path.join(output, orientation_str.replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(">", "").replace("|", ""))
                     message += f"in {orientation_str} orientation"
 
                 if body_name == "unknown body" and lens_name == "unknown lens" and orientation_str == "unknown":

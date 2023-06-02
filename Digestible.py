@@ -69,6 +69,7 @@ selected_delegation_dir = ""
 last_eta = 0
 started_calculation = False
 aborted = False
+operation_complete = False
 
 # initialise global variables
 
@@ -193,12 +194,13 @@ def settings():
     editors_to_add.place(x=300.0, y=475)
     # draw entry box to modify delegate speed dial editors with currently saved editors as placeholder
 
-    canvas.create_text(300, 515, text=f"Alter your saved editors by adding names separated by commas.", anchor="nw",
-                       fill="#37352F", font=("Courier", 16 * -1))
+    canvas.create_text(300, 515, text=f"Alter your saved editors by adding names separated by commas. These names will appear on the delegate screen for faster delegation.", anchor="nw",
+                       fill="#37352F", font=("Courier", 16 * -1), width=870)
 
     update_image = tk.PhotoImage(file=asset_relative_path("update_btn.png"))
     update_editors = tk.Button(image=update_image, command=lambda: add_editors(new_editors_var), borderwidth=0,
-                               highlightthickness=0, relief="flat", bg="#FFFFFF", anchor="w")
+                               highlightthickness=0, relief="flat", bg="#FFFFFF", anchor="w", padx=0, pady=0)
+
     update_editors.place(x=972.0, y=468, width=125, height=35)
 
     window.mainloop()
@@ -235,7 +237,7 @@ def add_editors(editor_string):
     for i in editor_string.get().split(","):
         name = i.strip().replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(
             ">", "").replace("|", "").replace("*", "")
-        if len(editors) < 12 and name.lower() not in editors_lower and name != "Save some editors" and len(name) < 21:
+        if len(editors) < 12 and name.lower() not in editors_lower and name != "Type to save editors" and len(name) < 21:
             editors_lower.append(i.lower().strip().replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<", "").replace(
                     ">", "").replace("|", "").replace("*", ""))
             editors.append(
@@ -311,14 +313,14 @@ def help_menu():
 
     canvas.create_text(725, 150, anchor="n",
                        text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nIngest mode: This mode copies images from cards under 100GB in size to your computer while automatically sorting images by camera body, lens used, and orientation so you don't have to.\n\nAfter you've ingested your images, it's time to start culling!\n\nDigest mode: This mode automatically separates your images based on how usable they are by analysing exposure and blurriness\n\nDelegate: Once you've sorted your images, it's time to delegate them to your team for post-production. This mode splits the sorted images between editors evenly so post-production can begin as soon as possible.\n\nIf you have digested the folder already, Digestible will automatically delegate the digested folder and delegated images will be inside.\n\n\n\nRemember, Digestible is designed for use with RAW image formats exclusively and will not function with JPEGs.",
-                       width=800, font=("Courier", 18 * -1), fill="#37352F")
+                       width=800, font=("Courier", 18 * -1), fill="#37352F") # Todo
     # Display help text
 
     window.mainloop()
 
 
 def time_left(canvas, time_remaining, images_left):
-    while True:
+    while len(image_list) > 0:
         # Calculate and update time remaining text on screen during an operation
 
         num_files = total_files - len(image_list)
@@ -330,10 +332,16 @@ def time_left(canvas, time_remaining, images_left):
             eta = "Calculating time remaining"
         elif round(eta) < 2:
             eta = "Almost done"
+        elif eta > 60 and round(eta / 60) == 1:
+            eta = "About 1 minute remaining"
         elif eta > 60:
-            eta = "About " + str(round(eta / 60)) + " minute(s) remaining"
+            eta = "About " + str(round(eta / 60)) + " minutes remaining"
+        elif eta > 3600 and round(eta / 60 / 60) == 1:
+            eta = "About 1 hour remaining, this may take a while"
         elif eta > 3600:
-            eta = "About " + str(round(eta / 60 / 60)) + " hours(s) remaining, this may take a while"
+            eta = "About " + str(round(eta / 60 / 60)) + " hours remaining, this may take a while"
+        elif eta > 86400 and round(eta / 60 / 60 / 24) == 1:
+            eta = "About 1 day remaining, this may take a while"
         elif eta > 86400:
             eta = "About " + str(round(eta / 60 / 60 / 24)) + " day(s) remaining, this may take a while"
         else:
@@ -344,7 +352,11 @@ def time_left(canvas, time_remaining, images_left):
         # Update remaining items text on screen
 
         canvas.itemconfig(time_remaining, text=eta)
-        # Update time remaining text and rerun time_left function every 1 second
+        # Update time remaining text
+
+    eta = "Operation complete: Press finish to return to the main menu"
+    canvas.itemconfig(images_left, text=f"{str(len(image_list))} files left from {str(total_files)}")
+    canvas.itemconfig(time_remaining, text=eta)
 
 
 def disable_ingest_button(canvas, ingest_name_var, button_1, message):
@@ -390,7 +402,6 @@ def disable_ingest_button(canvas, ingest_name_var, button_1, message):
 def ingest():
     global image_list
     global total_files
-    global average_time
     global file_names
 
     window.title("Digestible · Ingest")
@@ -481,7 +492,7 @@ def ingest():
 
     # draw ingest screen elements
 
-    canvas.create_text(300.0, 650.0, anchor="nw", text="Sort By:", fill="#37352F", font=("Courier", 15 * -1))
+    canvas.create_text(300.0, 650.0, anchor="nw", text="Sort By:", fill="#37352F", font=("Courier", 15 * -1, "bold"))
 
     body = tk.Checkbutton(window, text="Body Type", variable=sort_body)
     body.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
@@ -500,8 +511,8 @@ def ingest():
 
     canvas.create_text(655, 653, text="Ingest Name:", anchor="nw", font=("Courier", 14 * -1), fill="#37352F")
 
-    canvas.create_text(725, 220, anchor="n", justify="center",
-                       text="Ingest Mode\n\nDesigned to simplify your ingest processes, Digestible will automatically look through your storage devices for RAW image formats and copy them over to your specified output folder.\n\nYou have three options: body, optics and orientation. Digestible will look at the image's exif information and determine where to place the files on your local disk.",
+    canvas.create_text(725, 220, anchor="n",
+                       text="Welcome to Ingest mode!\n\nDesigned to simplify your ingest processes, Digestible will automatically look through your storage devices for RAW image formats and copy them over to your specified output folder.\n\nYou have three options: body, optics and orientation. Digestible will look at the image's exif information and determine where to place the files on your local disk.",
                        fill="#37352F",
                        font=("Courier", 16 * -1), width=820)
 
@@ -518,10 +529,10 @@ def ingest():
                                                                optics=sort_optics, orientation=sort_orientation,
                                                                ingest_name=ingest_name_var.get().strip()),
                          relief="flat", padx=0, pady=0)
-    button_1.place(x=1020.0, y=642.0, width=125, height=35)
+    button_1.place(x=1040.0, y=642.0, width=125, height=35)
 
-    message = canvas.create_text(725.0, 595.0, anchor="n", text="Name the ingest below to start", fill="#37352F",
-                                 font=("Courier", 15 * -1), width=850, justify="center")
+    message = canvas.create_text(300.0, 595.0, anchor="nw", text="Name the ingest below to start", fill="#37352F",
+                                 font=("Courier", 15 * -1), width=850)
 
     disable_ingest_button(canvas, ingest_name_var, button_1, message)
 
@@ -530,15 +541,15 @@ def ingest():
                            fill="#FF0000", font=("Courier", 15 * -1), justify="center")
     else:
         canvas.create_text(725.0, 127.0, anchor="n",
-                           text=f"{len(image_list)} images to ingest from {drives} drive(s) · Ignoring drives over 100 GB in size",
+                           text=f"{len(image_list)} images to ingest from {drives} drive(s) | Ignoring drives over 100 GB in size",
                            fill="#37352F", font=("Courier", 15 * -1), justify="center")
 
-    canvas.create_text(500.0, 500.0, anchor="n", text=inputs[0], fill="#37352F", font=("Courier", 16 * -1))
-    canvas.create_text(725.0, 500.0, anchor="n", text=inputs[1], fill="#37352F", font=("Courier", 16 * -1))
-    canvas.create_text(950.0, 500.0, anchor="n", text=inputs[2], fill="#37352F", font=("Courier", 16 * -1))
-    canvas.create_text(500.0, 534.0, anchor="n", text=drive_files[0], fill="#37352F", font=("Courier", 15 * -1))
-    canvas.create_text(725.0, 534.0, anchor="n", text=drive_files[1], fill="#37352F", font=("Courier", 15 * -1))
-    canvas.create_text(950.0, 534.0, anchor="n", text=drive_files[2], fill="#37352F", font=("Courier", 15 * -1))
+    canvas.create_text(450.0, 447.0, anchor="n", text=inputs[0], fill="#37352F", font=("Courier", 16 * -1))
+    canvas.create_text(725.0, 447.0, anchor="n", text=inputs[1], fill="#37352F", font=("Courier", 16 * -1))
+    canvas.create_text(1000.0, 447.0, anchor="n", text=inputs[2], fill="#37352F", font=("Courier", 16 * -1))
+    canvas.create_text(450.0, 481.0, anchor="n", text=drive_files[0], fill="#37352F", font=("Courier", 15 * -1))
+    canvas.create_text(725.0, 481.0, anchor="n", text=drive_files[1], fill="#37352F", font=("Courier", 15 * -1))
+    canvas.create_text(1000.0, 481.0, anchor="n", text=drive_files[2], fill="#37352F", font=("Courier", 15 * -1))
 
     # draw ingest screen elements
 
@@ -641,7 +652,7 @@ def digest():
                        text="\nWelcome to Digest. This should be the second part of your improved post-production workflow, After ingesting, you might want to cull through the images you've just taken, but why bother doing that yourself. The digest mode has 3 options: Colour dominance, Exposure and Blur. \n\nExposure is the simplest and most common reason for an unusable image, Digestible will identify and remove any irrecoverably underexposed or overexposed images from your ingest folder. Be careful when digesting images if shot intentionally in low light.\n\nThe blur option will identify unusable images based on how blurry the image is. Use with caution if images are intentionally blurry (e.g. panning action shots).\n\nFinally the colour dominance option will split images based on the colour that is most dominant in the frame. \n\nRemember digest mode is not human and does not perceive colour the same way you do.\n\nHappy Digesting!",
                        width=800, font=("Courier", 16 * -1), fill="#37352F")
 
-    canvas.create_text(300.0, 610.0, anchor="nw", text="Options:", fill="#37352F", font=("Courier", 16 * -1))
+    canvas.create_text(300.0, 610.0, anchor="nw", text="Options:", fill="#37352F", font=("Courier", 16 * -1, "bold"))
 
     taste, colour, exposure, blur = tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar()
 
@@ -691,7 +702,7 @@ def digest():
                          command=lambda: operation_in_progress("Digesting", colour=colour, exposure=exposure, blur=blur,
                                                                folder=selected_digest_dir, taste=taste), relief="flat", padx=0,
                          pady=0)
-    button_1.place(x=1025.0, y=642.0, width=125, height=35)
+    button_1.place(x=1040.0, y=642.0, width=125, height=35)
 
     # Draw remaining screen elements
 
@@ -752,7 +763,7 @@ def delegate():
     # Check to see if folder has been delegated, if so return to main menu and display warning
 
     for root, dirs, files in os.walk(selected_delegation_dir):
-        if "Rejects" not in root.split("\\"):
+        if "Rejects" not in root.split("\\") and "Rejects" not in root.split("/"):
             for f in files:
                 if is_media(f) == "image" and not f.startswith("."):
                     image_list.append(os.path.join(root, f))
@@ -1032,8 +1043,6 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
     global delegating_to
     global selected_delegation_dir
     global selected_digest_dir
-    selected_delegation_dir = ""
-    selected_digest_dir = ""
 
     started_calculation = False
     average_time = 0
@@ -1105,7 +1114,6 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
             editor_output = os.path.join(output, delegating_to[current_folder])
 
             image_list[index] = [image, editor_output, file_name]
-            print(image, editor_output, file_name, current_folder)
             images_in_folder += 1
 
             if images_in_folder == images_per_editor:
@@ -1116,9 +1124,10 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
 
     button_image_1 = tk.PhotoImage(file=asset_relative_path("abort_btn.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0,
-                         command=lambda: main(f"{operation_type} Aborted"),
+                         command=lambda: make_complete(),
                          relief="flat", padx=0, pady=0)
-    button_1.place(x=1020.0, y=638.0, width=125, height=35)
+
+    button_1.place(x=1050.0, y=638.0, width=125, height=35)
 
     if drives is None:
         canvas.create_text(725.0, 115.0, anchor="n",
@@ -1141,28 +1150,37 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
     time_remaining = canvas.create_text(650.0, 674.0, anchor="n", text="", fill="#37352F",
                                         font=("Courier", 12 * -1))
     activity_list = tk.Listbox(font=("Courier", 20 * -1))
-    if taste.get() == 1:
-        activity_list.place(x=300.0, y=150.0, width=600.0, height=460.0)
-    else:
+
+    if operation_type == "Ingesting":
+        t1 = Thread(target=lambda: ingest_process(progress, activity_list, ingest_name, body, optics, orientation))
+        t1.start()
         activity_list.place(x=300.0, y=150.0, width=850.0, height=460.0)
 
-    preview_image = Image.open(asset_relative_path("Digestible Icon.png")).resize((200, 200))
+    elif operation_type == "Digesting":
+        activity_list.place(x=300.0, y=150.0, width=600.0, height=460.0)
+        preview_image = Image.open(asset_relative_path("Digestible Icon.png")).resize((200, 200))
+        test = ImageTk.PhotoImage(preview_image)
+        preview = tk.Label(image=test)
+        preview.place(x=945, y=150)
+        t1 = Thread(
+            target=lambda: digest_process(progress, activity_list, folder, exposure, blur, taste, colour, selected_digest_dir))
+        t1.start()
+        t3 = Thread(target=lambda: update_preview(preview))
+        t3.start()
 
-    test = ImageTk.PhotoImage(preview_image)
-
-    preview = tk.Label(image=test)
-    preview.place(x=945, y=150)
-
-    t1 = Thread(target=lambda: process_image(operation_type, progress, activity_list, colour, exposure, blur, folder,
-                                             body, optics, orientation, ingest_name, taste))
+    elif operation_type == "Delegating":
+        t1 = Thread(
+            target=lambda: delegate_process(progress, activity_list, selected_delegation_dir))
+        t1.start()
+        activity_list.place(x=300.0, y=150.0, width=850.0, height=460.0)
 
     t2 = Thread(target=lambda: time_left(canvas, time_remaining, images_left))
-
-    t3 = Thread(target=lambda: update_preview(preview))
-
-    t1.start()
     t2.start()
-    t3.start()
+
+    canvas.after(1, check_completion(canvas, button_1))
+
+    selected_delegation_dir = ""
+    selected_digest_dir = ""
 
     window.mainloop()
 
@@ -1170,14 +1188,29 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
 def update_preview(preview):
     while True:
         try:
-            preview_img = ImageTk.PhotoImage(Image.open(asset_relative_path("preview.png")))
+            image_to_show = Image.open(asset_relative_path("preview.png"))
+
+            if image_to_show.height > image_to_show.width:
+                crop_from_y = round((image_to_show.height - image_to_show.width) / 2)
+                image_to_show = image_to_show.crop((0, crop_from_y, image_to_show.width, crop_from_y + image_to_show.width))
+
+            elif image_to_show.width > image_to_show.height:
+                crop_from_x = round((image_to_show.width - image_to_show.height) / 2)
+                image_to_show = image_to_show.crop((crop_from_x, 0, crop_from_x + image_to_show.height, image_to_show.height))
+
+            image_to_show = image_to_show.resize((200, 200))
+            preview_img = ImageTk.PhotoImage(image_to_show)
             preview.configure(image=preview_img)
             preview.image = preview_img
+
+            image_to_show.close()
         except PIL.UnidentifiedImageError:
             pass
         except FileNotFoundError:
             pass
         except OSError:
+            pass
+        except SyntaxError:
             pass
 
 
@@ -1206,8 +1239,53 @@ def check_filename(current_file, current_image):
     return name
 
 
-def process_image(operation_type, progress, activity_list, colour=None, exposure=None, blur=None, folder=None,
-                  body=None, optics=None, orientation=None, ingest_name=None, taste=None):
+def ingest_process(progress, activity_list, ingest_name, body, optics, orientation):
+    global total_files
+    global image_list
+    global file_names
+    global average_time
+    global aborted
+
+    while len(image_list) > 0:
+        start_time = time.time()
+
+        current_image = image_list[-1]
+        if os.name == "nt":
+            current_file = current_image.split("\\")[-1]
+        else:
+            current_file = current_image.split("/")[-1]
+
+        del image_list[-1]
+        del file_names[-1]
+
+        num_files = total_files - len(image_list)
+
+        root = os.path.join(str(config["Program"]["default output"]), ingest_name)
+
+        name = check_filename(current_file, current_image)
+
+        backup_root = ""
+
+        try:
+            backup = str(config["Program"]["backup output"])
+
+            if os.path.exists(backup):
+                backup_root = os.path.join(backup, ingest_name)
+        except KeyError:
+            pass
+
+        ingest_image(activity_list, body, optics, orientation, current_image, root, name, current_file, backup_root)
+
+        progress["value"] = 100 - len(image_list) / total_files * 100
+
+        average_time = (average_time * (num_files - 1) + time.time() - start_time) / num_files
+
+    if os.name == "nt":
+        pass
+        # notify.show_toast("Digestible", f"Ingest complete: Ingested {total_files} files")
+
+
+def digest_process(progress, activity_list, folder, exposure, blur, taste, colour, digest_dir):
     global total_files
     global image_list
     global file_names
@@ -1217,161 +1295,151 @@ def process_image(operation_type, progress, activity_list, colour=None, exposure
     if len(image_list) == 0:
         if os.path.isfile(asset_relative_path("preview.png")):
             os.remove(asset_relative_path("preview.png"))
+        return
 
     while len(image_list) > 0:
-        if operation_type == "Ingesting":
-            start_time = time.time()
+        root = os.path.join(folder, "Digested Images")
 
-            current_image = image_list[-1]
-            if os.name == "nt":
-                current_file = current_image.split("\\")[-1]
-            else:
-                current_file = current_image.split("/")[-1]
+        start_time = time.time()
 
-            del image_list[-1]
-            del file_names[-1]
+        current_image = image_list[-1]
+        current_file = file_names[-1]
+        del image_list[-1]
+        del file_names[-1]
 
-            num_files = total_files - len(image_list)
+        message = f"{current_file}: "
 
-            root = os.path.join(str(config["Program"]["default output"]), ingest_name)
+        name = check_filename(current_file, current_image)
 
-            name = check_filename(current_file, current_image)
+        image_preview = digest_functions.get_thumbnail(current_image)
+        num_files = total_files - len(image_list)
+        output = root
+        reject = False
 
-            backup_root = ""
+        if image_preview != "no thumbnail":
+            if exposure.get() == 1:
+                exposure_check = digest_functions.check_exposure(image_preview)
+                if exposure_check == "underexposed":
+                    output = os.path.join(os.path.join(output, "Rejects"), "Underexposed")
+                    reject = True
+                    message += f"underexposed and rejected "
 
-            try:
-                backup = str(config["Program"]["backup output"])
+                elif exposure_check == "overexposed":
+                    output = os.path.join(os.path.join(output, "Rejects"), "Overexposed")
+                    reject = True
+                    message += f"overexposed and rejected "
 
-                if os.path.exists(backup):
-                    backup_root = os.path.join(backup, ingest_name)
-            except KeyError:
-                pass
+            if blur.get() == 1 and not reject:
+                blurry = digest_functions.check_image_blur(image_preview)
+                if blurry:
+                    output = os.path.join(os.path.join(output, "Rejects"), "Blurry")
+                    reject = True
+                    message += "blurry and rejected"
 
-            if ingest_image(activity_list, body, optics, orientation, current_image, root, name, current_file, backup_root):
-                main("Ingest aborted")
+            if not reject:
+                message += "accepted"
 
+                if taste.get() == 1:
+                    classification = digest_functions.get_image_contents(image_preview, detector, predictor)
+                    output = os.path.join(output, classification[0])
+                    if classification[0] == "People present":
+                        message += f" {classification[0].lower()} ({classification[1]})"
+                    elif classification[0] != "Unclassified":
+                        message += f" {classification[0].lower()} present"
+
+                if colour.get() == 1:
+                    colour_dominance = digest_functions.check_colour(image_preview)
+                    if colour_dominance != "not colour dominant":
+                        output = os.path.join(output, colour_dominance)
+                    message += f" ({colour_dominance})"
+
+            del image_preview
+        else:
+            output = os.path.join(output, "No thumbnail available")
+            message += "not tested (could not generate a thumbnail)"
+
+        try:
+            if not os.path.exists(output):
+                os.makedirs(output)
+
+            shutil.move(current_image, os.path.join(output, current_file))
+        except PermissionError:
+            pass
+            # main("Digest aborted, check your permissions to edit this folder") TODO
+        except OSError:
+            pass
+
+        if name != "":
+            original_output_file_dir = os.path.join(output, current_file)
+            final_dir = os.path.join(output, name)
+            os.rename(original_output_file_dir, final_dir)
+
+        if len(image_list) > 0:
             progress["value"] = 100 - len(image_list) / total_files * 100
-
+            next_index = activity_list.size() + 1
+            activity_list.insert(next_index, message)
+            activity_list.yview_scroll(1, "unit")
             average_time = (average_time * (num_files - 1) + time.time() - start_time) / num_files
-
-            time.sleep(0.5)
-            main(f"Ingested {total_files} files")
+        else:
             if os.name == "nt":
                 pass
-                # notify.show_toast("Digestible", f"Ingest complete: Ingested {total_files} files")
+                # notify.show_toast("Digestible", f"Digest complete: Digested {total_files} images")
 
-        elif operation_type == "Digesting":
-            root = os.path.join(folder, "Digested Images")
+    clean_up(digest_dir)
 
-            start_time = time.time()
 
-            current_image = image_list[-1]
-            current_file = file_names[-1]
-            del image_list[-1]
-            del file_names[-1]
+def delegate_process(progress, activity_list, delegate_dir):
+    global total_files
+    global image_list
+    global file_names
+    global average_time
+    global aborted
 
-            message = f"{current_file}: "
+    while len(image_list) > 0:
+        start_time = time.time()
 
-            print(current_image)
+        current_image = image_list[-1]
+        del image_list[-1]
 
-            name = check_filename(current_file, current_image)
+        name = current_image[2]
+        editor_folder = current_image[1]
+        original_path = current_image[0]
 
-            image_preview = digest_functions.get_thumbnail(current_image)
-            output = root
-            reject = False
+        delegate_functions.delegate_image(name, editor_folder, original_path)
 
-            if image_preview != "no thumbnail":
-                if exposure.get() == 1:
-                    exposure_check = digest_functions.check_exposure(image_preview)
-                    if exposure_check == "underexposed":
-                        output = os.path.join(os.path.join(output, "Rejects"), "Underexposed")
-                        reject = True
-                        message += f"underexposed and rejected "
+        num_files = total_files - len(image_list)
 
-                    elif exposure_check == "overexposed":
-                        output = os.path.join(os.path.join(output, "Rejects"), "Overexposed")
-                        reject = True
-                        message += f"overexposed and rejected "
+        progress["value"] = 100 - len(image_list) / total_files * 100
 
-                if blur.get() == 1 and not reject:
-                    blurry = digest_functions.check_image_blur(image_preview)
-                    if blurry:
-                        output = os.path.join(os.path.join(output, "Rejects"), "Blurry")
-                        reject = True
-                        message += "blurry and rejected"
+        average_time = (average_time * (num_files - 1) + time.time() - start_time) / num_files
 
-                if not reject:
+        next_index = activity_list.size() + 1
+        activity_list.insert(next_index, f"Delegated to {editor_folder.split('/')[-1]}: {name} ")
+        activity_list.yview_scroll(1, "unit")
 
-                    if taste.get() == 1:
-                        classification = digest_functions.get_image_contents(image_preview, detector, predictor)
-                        output = os.path.join(output, classification)
-                        message += f"{classification} "
+    clean_up(delegate_dir)
 
-                    if colour.get() == 1:
-                        colour_dominance = digest_functions.check_colour(image_preview)
-                        if colour_dominance != "not colour dominant":
-                            output = os.path.join(output, colour_dominance)
-                        message += f"({colour_dominance})"
 
-                del image_preview
-            else:
-                output = os.path.join(output, "No thumbnail available")
-                message += "not tested (could not generate a thumbnail)"
+def clean_up(path):
+    print(path)
+    folders = []
+    for i in os.listdir(path):
+        if os.path.isdir(os.path.join(path, i)):
+            folders.append(os.path.join(path, i))
 
+    for folder in folders:
+        dir_size = 0
+        for root, dirs, files in os.walk(folder):
+            for f in files:
+                if os.path.isfile(os.path.join(root, f)) and not f.startswith("."):
+                    print(root, f)
+                    dir_size += os.path.getsize(os.path.join(root, f))
+        print(dir_size, folder)
+        if dir_size == 0:
             try:
-                if not os.path.exists(output):
-                    os.makedirs(output)
-
-                shutil.copy2(current_image, os.path.join(output, current_file))
-            except PermissionError:
-                main("Digest aborted, check your permissions to edit this folder")
-            except OSError:
+                shutil.rmtree(os.path.join(folder))
+            except FileNotFoundError:
                 pass
-
-            if name != "":
-                original_output_file_dir = os.path.join(output, current_file)
-                final_dir = os.path.join(output, name)
-                os.rename(original_output_file_dir, final_dir)
-
-            if len(image_list) > 0:
-                progress["value"] = 100 - len(image_list) / total_files * 100
-                next_index = activity_list.size() + 1
-                activity_list.insert(next_index, message)
-                activity_list.yview_scroll(1, "unit")
-                average_time = (average_time * (len(image_list) - 1) + time.time() - start_time) / len(image_list)
-            else:
-                main(f"Digested {total_files} images")
-                if os.name == "nt":
-                    pass
-                    # notify.show_toast("Digestible", f"Digest complete: Digested {total_files} images")
-
-        elif operation_type == "Delegating":
-            start_time = time.time()
-
-            current_image = image_list[-1]
-            del image_list[-1]
-
-            name = current_image[2]
-            editor_folder = current_image[1]
-            original_path = current_image[0]
-
-            delegate_failed = delegate_functions.delegate_image(name, editor_folder, original_path)
-
-            num_files = total_files - len(image_list)
-
-            progress["value"] = 100 - len(image_list) / total_files * 100
-
-            average_time = (average_time * (num_files - 1) + time.time() - start_time) / num_files
-
-            if delegate_failed == "Failed":
-                main("Ingest aborted, you may be out of space")
-            elif len(image_list) == 0:
-                main(f"Delegated {total_files} files to {len(delegating_to)} editors")
-
-            else:
-                next_index = activity_list.size() + 1
-                activity_list.insert(next_index, f"Delegated to {editor_folder.split('/')[-1]}: {name} ")
-                activity_list.yview_scroll(1, "unit")
 
 
 def main(message=""):
@@ -1442,6 +1510,29 @@ def main(message=""):
     # Clear window, draw sidebar objects and set window title
 
     window.mainloop()
+
+
+def make_complete():
+    global operation_complete
+    operation_complete = True
+
+
+def check_completion(canvas, abort_button):
+    global operation_complete
+
+    if len(image_list) == 0:
+        changed_image = tk.PhotoImage(file=asset_relative_path("return_btn.png"))
+        abort_button.image = changed_image
+        abort_button.configure(image=changed_image)
+
+    if len(image_list) == 0 and operation_complete:
+        operation_complete = False
+        main("Operation complete")
+    elif operation_complete:
+        operation_complete = False
+        main("Operation aborted")
+
+    canvas.after(200, lambda: check_completion(canvas, abort_button))
 
 
 if __name__ == '__main__':
