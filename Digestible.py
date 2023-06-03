@@ -313,7 +313,7 @@ def help_menu():
 
     canvas.create_text(725, 150, anchor="n",
                        text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nIngest mode: This mode copies images from cards under 100GB in size to your computer while automatically sorting images by camera body, lens used, and orientation so you don't have to.\n\nAfter you've ingested your images, it's time to start culling!\n\nDigest mode: This mode automatically separates your images based on how usable they are by analysing exposure and blurriness\n\nDelegate: Once you've sorted your images, it's time to delegate them to your team for post-production. This mode splits the sorted images between editors evenly so post-production can begin as soon as possible.\n\nIf you have digested the folder already, Digestible will automatically delegate the digested folder and delegated images will be inside.\n\n\n\nRemember, Digestible is designed for use with RAW image formats exclusively and will not function with JPEGs.",
-                       width=800, font=("Courier", 18 * -1), fill="#37352F") # Todo
+                       width=800, font=("Courier", 18 * -1), fill="#37352F")  # Todo
     # Display help text
 
     window.mainloop()
@@ -529,7 +529,7 @@ def ingest():
                                                                optics=sort_optics, orientation=sort_orientation,
                                                                ingest_name=ingest_name_var.get().strip()),
                          relief="flat", padx=0, pady=0)
-    button_1.place(x=1040.0, y=642.0, width=125, height=35)
+    button_1.place(x=1045.0, y=638.0, width=125, height=35)
 
     message = canvas.create_text(300.0, 595.0, anchor="nw", text="Name the ingest below to start", fill="#37352F",
                                  font=("Courier", 15 * -1), width=850)
@@ -649,7 +649,7 @@ def digest():
                            font=("Courier", 16 * -1))
 
     canvas.create_text(725, 180, anchor="n",
-                       text="\nWelcome to Digest. This should be the second part of your improved post-production workflow, After ingesting, you might want to cull through the images you've just taken, but why bother doing that yourself. The digest mode has 3 options: Colour dominance, Exposure and Blur. \n\nExposure is the simplest and most common reason for an unusable image, Digestible will identify and remove any irrecoverably underexposed or overexposed images from your ingest folder. Be careful when digesting images if shot intentionally in low light.\n\nThe blur option will identify unusable images based on how blurry the image is. Use with caution if images are intentionally blurry (e.g. panning action shots).\n\nFinally the colour dominance option will split images based on the colour that is most dominant in the frame. \n\nRemember digest mode is not human and does not perceive colour the same way you do.\n\nHappy Digesting!",
+                       text="\nWelcome to Digest. This should be the second part of your improved post-production workflow, After ingesting, you might want to cull through the images you've just taken, but why bother doing that yourself. The digest mode has 3 options: Colour dominance, Exposure and Blur. \n\nExposure is the simplest and most common reason for an unusable image, Digestible will identify and remove any irrecoverably underexposed or overexposed images from your ingest folder. Be careful when digesting images if shot intentionally in low light.\n\nThe blur option will identify unusable images based on how blurry the image is. Use with caution if images are intentionally blurry (e.g. panning action shots).\n\nFinally the colour dominance option will split images based on the colour that is most dominant in the frame. \n\nRemember digest mode is not human and does not perceive images the same way you do.\n\nHappy Digesting!",
                        width=800, font=("Courier", 16 * -1), fill="#37352F")
 
     canvas.create_text(300.0, 610.0, anchor="nw", text="Options:", fill="#37352F", font=("Courier", 16 * -1, "bold"))
@@ -702,7 +702,7 @@ def digest():
                          command=lambda: operation_in_progress("Digesting", colour=colour, exposure=exposure, blur=blur,
                                                                folder=selected_digest_dir, taste=taste), relief="flat", padx=0,
                          pady=0)
-    button_1.place(x=1040.0, y=642.0, width=125, height=35)
+    button_1.place(x=1045.0, y=638.0, width=125, height=35)
 
     # Draw remaining screen elements
 
@@ -928,7 +928,7 @@ def delegate():
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0,
                          command=lambda: operation_in_progress("Delegating", folder=selected_delegation_dir),
                          relief="flat", padx=0, pady=0)
-    button_1.place(x=1040.0, y=640.0, width=125.0, height=35.0)
+    button_1.place(x=1045.0, y=638.0, width=125, height=35)
 
     button_image_2 = tk.PhotoImage(file=asset_relative_path("change_delegate.png"))
     button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0,
@@ -1127,7 +1127,7 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
                          command=lambda: make_complete(),
                          relief="flat", padx=0, pady=0)
 
-    button_1.place(x=1050.0, y=638.0, width=125, height=35)
+    button_1.place(x=1045.0, y=638.0, width=125, height=35)
 
     if drives is None:
         canvas.create_text(725.0, 115.0, anchor="n",
@@ -1144,7 +1144,7 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
 
     images_left = canvas.create_text(650.0, 618.0, anchor="n", text="", fill="#37352F", font=("Courier", 12 * -1))
 
-    progress = ttk.Progressbar(window, orient='horizontal', mode='determinate', length=700)
+    progress = ttk.Progressbar(window, orient='horizontal', mode='determinate', length=715)
     progress.place(x=300, y=645)
 
     time_remaining = canvas.create_text(650.0, 674.0, anchor="n", text="", fill="#37352F",
@@ -1177,7 +1177,7 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
     t2 = Thread(target=lambda: time_left(canvas, time_remaining, images_left))
     t2.start()
 
-    canvas.after(1, check_completion(canvas, button_1))
+    canvas.after(1, check_completion(canvas, button_1, main_btn, ingest_btn, digest_btn, delegate_btn, help_btn, settings_btn))
 
     selected_delegation_dir = ""
     selected_digest_dir = ""
@@ -1201,7 +1201,6 @@ def update_preview(preview):
             image_to_show = image_to_show.resize((200, 200))
             preview_img = ImageTk.PhotoImage(image_to_show)
             preview.configure(image=preview_img)
-            preview.image = preview_img
 
             image_to_show.close()
         except PIL.UnidentifiedImageError:
@@ -1290,7 +1289,7 @@ def digest_process(progress, activity_list, folder, exposure, blur, taste, colou
     global image_list
     global file_names
     global average_time
-    global aborted
+    global operation_complete
 
     if len(image_list) == 0:
         if os.path.isfile(asset_relative_path("preview.png")):
@@ -1364,10 +1363,9 @@ def digest_process(progress, activity_list, folder, exposure, blur, taste, colou
 
             shutil.move(current_image, os.path.join(output, current_file))
         except PermissionError:
-            pass
-            # main("Digest aborted, check your permissions to edit this folder") TODO
+            operation_complete = True
         except OSError:
-            pass
+            operation_complete = True
 
         if name != "":
             original_output_file_dir = os.path.join(output, current_file)
@@ -1517,13 +1515,19 @@ def make_complete():
     operation_complete = True
 
 
-def check_completion(canvas, abort_button):
+def check_completion(canvas, abort_button, main_btn, ingest_btn, digest_btn, delegate_btn, help_btn, settings_btn):
     global operation_complete
 
     if len(image_list) == 0:
         changed_image = tk.PhotoImage(file=asset_relative_path("return_btn.png"))
         abort_button.image = changed_image
         abort_button.configure(image=changed_image)
+        main_btn["state"] = "normal"
+        ingest_btn["state"] = "normal"
+        digest_btn["state"] = "normal"
+        delegate_btn["state"] = "normal"
+        help_btn["state"] = "normal"
+        settings_btn["state"] = "normal"
 
     if len(image_list) == 0 and operation_complete:
         operation_complete = False
@@ -1532,7 +1536,7 @@ def check_completion(canvas, abort_button):
         operation_complete = False
         main("Operation aborted")
 
-    canvas.after(200, lambda: check_completion(canvas, abort_button))
+    canvas.after(200, lambda: check_completion(canvas, abort_button, main_btn, ingest_btn, digest_btn, delegate_btn, help_btn, settings_btn))
 
 
 if __name__ == '__main__':
