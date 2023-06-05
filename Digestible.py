@@ -27,24 +27,40 @@ from tkinter import filedialog
 
 import os
 
-from imageai.Detection import ObjectDetection
-from imageai.Classification import ImageClassification
+taste_unavailable = False
+config = configparser.ConfigParser()
 
-detector = ObjectDetection()
-detector.setModelTypeAsYOLOv3()
-detector.setModelPath(asset_relative_path("yolov3.pt"))
-detector.loadModel()
+if os.path.exists('./config.dgstbl'):
+    config.read('./config.dgstbl')
 
-predictor = ImageClassification()
-predictor.setModelTypeAsResNet50()
-predictor.setModelPath(asset_relative_path("resnet50-19c8e357.pth"))
-predictor.loadModel()
+if not config.has_section("Program"):
+    config.add_section("Program")
+
+try:
+    from imageai.Detection import ObjectDetection
+    from imageai.Classification import ImageClassification
+
+    detector = ObjectDetection()
+    detector.setModelTypeAsYOLOv3()
+    detector.setModelPath(os.path.join(config["Program"]["taste path"], "yolov3.pt"))
+    detector.loadModel()
+    predictor = ImageClassification()
+    predictor.setModelTypeAsResNet50()
+    predictor.setModelPath(os.path.join(config["Program"]["taste path"], "resnet50-19c8e357.pth"))
+    predictor.loadModel()
+except ValueError:
+    taste_unavailable = True
+    config["Program"]["taste path"] = ""
+except KeyError:
+    config["Program"]["taste path"] = ""
+    taste_unavailable = True
+
+write(config)
 
 window = tk.Tk()
 window.geometry("1200x700")
 window.configure(bg="#FFFFFF")
 window.resizable(False, False)
-config = configparser.ConfigParser()
 version_number = "Digestible v0.4.0"
 
 # Initiate Windows toast notification service if running in a Windows Environment 
@@ -52,7 +68,6 @@ if os.name == "nt":
     # from win10toast import ToastNotifier
     # notify = ToastNotifier()
     print("nt")
-
 # window.iconbitmap(asset_relative_path("Digestible Icon.ico"))
 icon_image = tk.Image("photo", file=asset_relative_path("Digestible Icon.png"))
 window.tk.call('wm', 'iconphoto', window._w, icon_image)
@@ -61,6 +76,7 @@ window.tk.call('wm', 'iconphoto', window._w, icon_image)
 image_list = []
 file_names = []
 delegating_to = []
+delegating_to_lower = []
 average_time = 0
 total_files = 0
 saved_editors = []
@@ -70,6 +86,7 @@ last_eta = 0
 started_calculation = False
 aborted = False
 operation_complete = False
+taste_added = False
 
 # initialise global variables
 
@@ -203,7 +220,26 @@ def settings():
 
     update_editors.place(x=972.0, y=468, width=125, height=35)
 
+    update_taste_img = tk.PhotoImage(file=asset_relative_path("taste_location_btn.png"))
+    update_taste = tk.Button(image=update_taste_img, command=set_taste, borderwidth=0,
+                               highlightthickness=0, relief="flat", bg="#FFFFFF", anchor="w", padx=0, pady=0)
+    update_taste.place(x=300.0, y=576, width=249, height=35)
+
+    canvas.create_text(300, 626, text="Select the folder that contains your pre-trained taste models (trained by imageai).\nRefer to the readme or user manual for more information.", anchor="nw", font=("Courier", 16 * -1))
+
     window.mainloop()
+
+
+def set_taste():
+    global taste_added
+    selected_folder = tk.filedialog.askdirectory(title="Select the folder containing taste models")
+    if os.path.exists(os.path.join(selected_folder, "resnet50-19c8e357.pth")) and os.path.exists(os.path.join(selected_folder, "yolov3.pt")):
+        config['Program']["taste path"] = selected_folder
+        write(config)
+        taste_added = True
+        main("Found taste files! Restart Digestible for changes to take effect. Taste will be available on next launch.")
+    else:
+        main("Folder does not contain both required files. Refer to the user guide for more information")
 
 
 def add_dir(default):
@@ -658,7 +694,7 @@ def digest():
 
     e1 = tk.Checkbutton(window, text="Colour dominance", variable=colour)
     e1.tk_setPalette(background="#ffffff", foreground="#37352F", selectcolor="#FFFFFF")
-    e1.place(x=400.0, y=644.0)
+    e1.place(x=388.0, y=644.0)
 
     e3 = tk.Checkbutton(window, text="Blur detection", variable=blur)
     e3.tk_setPalette(background="#ffffff", foreground="#37352F", selectcolor="#FFFFFF")
@@ -666,11 +702,12 @@ def digest():
 
     e2 = tk.Checkbutton(window, text="Exposure", variable=exposure)
     e2.tk_setPalette(background="#ffffff", foreground="#37352F", selectcolor="#FFFFFF")
-    e2.place(x=647.0, y=644.0)
+    e2.place(x=300.0, y=644.0)
 
-    e3 = tk.Checkbutton(window, text="Taste (beta)", variable=taste)
-    e3.tk_setPalette(background="#ffffff", foreground="#37352F", selectcolor="#FFFFFF")
-    e3.place(x=300.0, y=644.0)
+    if not taste_unavailable:
+        e3 = tk.Checkbutton(window, text="Taste (beta)", variable=taste)
+        e3.tk_setPalette(background="#ffffff", foreground="#37352F", selectcolor="#FFFFFF")
+        e3.place(x=655.0, y=644.0)
 
     # Draw screen elements
 
@@ -695,7 +732,7 @@ def digest():
     button_image_2 = tk.PhotoImage(file=asset_relative_path("change_digest.png"))
     button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0,
                          command=lambda: change_dir("digest"), relief="flat", padx=0, pady=0)
-    button_2.place(x=776.0, y=642.0, width=249, height=35)
+    button_2.place(x=776.0, y=638.0, width=249, height=35)
 
     button_image_1 = tk.PhotoImage(file=asset_relative_path("begin_btn.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0,
@@ -933,7 +970,7 @@ def delegate():
     button_image_2 = tk.PhotoImage(file=asset_relative_path("change_delegate.png"))
     button_2 = tk.Button(image=button_image_2, borderwidth=0, highlightthickness=0,
                          command=lambda: change_dir("delegate"), relief="flat", padx=0, pady=0)
-    button_2.place(x=776.0, y=640.0, width=249, height=35)
+    button_2.place(x=776.0, y=638.0, width=249, height=35)
 
     # Display screen elements
 
@@ -949,7 +986,11 @@ def delegate():
 def check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4, d2e5, d2e6, d2e7, d2e8, d2e9, d2e10,
                            d2e11, d2e12, editors, entered_editors, images_per_person_message, start_button):
     global delegating_to
+    global delegating_to_lower
+
     delegating_to = []
+    delegating_to_lower = []
+
     illegal_characters = ["\\", '/', '*', '?', '"', '<', '>', '|', ":"]
     illegal_name = False
 
@@ -978,11 +1019,6 @@ def check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4
     if d2e12.get() == 1 and editors[11] != "":
         delegating_to.append(editors[11])
 
-    delegating_to_lower = []
-
-    for i in delegating_to:
-        delegating_to_lower.append(i.strip().lower())
-
     for i in illegal_characters:
         if i in entered_editors.get():
             illegal_name = True
@@ -994,12 +1030,10 @@ def check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4
     else:
         additional_editors = entered_editors.get().split(",")
         for i in additional_editors:
-            name_to_add = i.strip().replace("/", "").replace("\\", "").replace("*", "").replace(":", "").replace("<",
-                                                                                                                 "").replace(
-                ">", "").replace("|", "")
-            if name_to_add != "Type names here" and name_to_add != "" and len(
-                    i) < 20 and name_to_add.lower() not in delegating_to_lower and len(delegating_to) < 33:
+            name_to_add = i.strip()
+            if name_to_add != "Type names here" and name_to_add != "" and len(i) < 20 and name_to_add.lower() not in delegating_to_lower and len(delegating_to) < 33:
                 delegating_to.append(name_to_add)
+                delegating_to_lower.append(name_to_add.lower())
 
         if len(delegating_to) == 0:
             message = "Delegating to nobody"
@@ -1464,13 +1498,11 @@ def main(message=""):
     except KeyError:
         pass
 
-    if os.path.exists('./config.dgstbl'):
-        config.read('./config.dgstbl')
 
-    if not config.has_section("Program"):
-        config.add_section("Program")
-
-    write(config)
+    if message == "" and taste_unavailable and taste_added:
+        message = "Found taste files! Restart Digestible for changes to take effect. Taste will be available on next launch."
+    elif message == "" and taste_unavailable:
+        message = "Taste is unavailable, ensure you have downloaded the required files and have changed the required option in settings."
 
     canvas.create_text(290, 670, anchor="sw", justify="left", text=message, fill="#FF0000",
                        font=("Courier", 16 * -1, "bold"), width=350)
