@@ -26,6 +26,7 @@ from tkinter import ttk
 from tkinter import filedialog
 
 import os
+from win10toast import ToastNotifier
 
 taste_unavailable = False
 config = configparser.ConfigParser()
@@ -63,12 +64,9 @@ window.configure(bg="#FFFFFF")
 window.resizable(False, False)
 version_number = "Digestible v0.4.0"
 
-# Initiate Windows toast notification service if running in a Windows Environment 
-if os.name == "nt":
-    # from win10toast import ToastNotifier
-    # notify = ToastNotifier()
-    print("nt")
-# window.iconbitmap(asset_relative_path("Digestible Icon.ico"))
+# Initiate Windows toast notification service
+notify = ToastNotifier()
+window.iconbitmap(asset_relative_path("Digestible Icon.ico"))
 icon_image = tk.Image("photo", file=asset_relative_path("Digestible Icon.png"))
 window.tk.call('wm', 'iconphoto', window._w, icon_image)
 # Set Tkinter taskbar icon variable 
@@ -84,7 +82,6 @@ selected_digest_dir = ""
 selected_delegation_dir = ""
 last_eta = 0
 started_calculation = False
-aborted = False
 operation_complete = False
 taste_added = False
 
@@ -247,9 +244,9 @@ def set_taste(reset=False):
     if reset:
         config.remove_option("Program", "taste path")
         taste_added = False
+        taste_unavailable = True
         write(config)
         main("#205445", "Taste model file path has been reset. Refer to the user guide for more information about setting up Taste.")
-        taste_unavailable = True
 
     else:
         selected_folder = tk.filedialog.askdirectory(title="Select the folder containing taste models")
@@ -554,24 +551,24 @@ def ingest():
 
     # draw ingest screen elements
 
-    canvas.create_text(300.0, 650.0, anchor="nw", text="Sort By:", fill="#37352F", font=("Courier", 15 * -1, "bold"))
+    canvas.create_text(300.0, 645.0, anchor="nw", text="Sort By:", fill="#37352F", font=("Courier", 15 * -1, "bold"))
 
     body = tk.Checkbutton(window, text="Body Type", variable=sort_body)
     body.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
-    body.place(x=380, y=648.0)
+    body.place(x=380, y=642.0)
 
     optics = tk.Checkbutton(window, text="Optics", variable=sort_optics)
     optics.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
-    optics.place(x=473.0, y=648.0)
+    optics.place(x=473.0, y=642.0)
 
     orient = tk.Checkbutton(window, text="Orientation", variable=sort_orientation)
     orient.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
-    orient.place(x=541.0, y=648.0)
+    orient.place(x=541.0, y=642.0)
 
     current_time = datetime.datetime.now()
     default_name = current_time.strftime("%d-%m-%Y-%H-%M-%S")
 
-    canvas.create_text(655, 653, text="Ingest Name:", anchor="nw", font=("Courier", 14 * -1), fill="#37352F")
+    canvas.create_text(655, 645, text="Ingest Name:", anchor="nw", font=("Courier", 14 * -1), fill="#37352F")
 
     canvas.create_text(725, 220, anchor="n",
                        text="Welcome to Ingest mode!\n\nDesigned to simplify your ingest processes, Digestible will automatically look through your storage devices for RAW image formats and copy them over to your specified output folder.\n\nYou have three options: body, optics and orientation. Digestible will look at the image's exif information and determine where to place the files on your local disk.",
@@ -583,7 +580,7 @@ def ingest():
     ingest_name.insert(0, f"{default_name}")
     ingest_name.tk_setPalette(background="#FFFFFF")
     ingest_name.focus_set()
-    ingest_name.place(x=760.0, y=651)
+    ingest_name.place(x=760.0, y=645)
 
     button_image_1 = tk.PhotoImage(file=asset_relative_path("begin_btn.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0,
@@ -1285,6 +1282,7 @@ def update_preview(preview):
 
 
 def check_filename(current_file, current_image):
+    global operation_complete
     name = ""
 
     if current_file in file_names:
@@ -1304,7 +1302,7 @@ def check_filename(current_file, current_image):
             file.close()
 
         except FileNotFoundError:
-            main(f"Operation aborted, {current_image} was not found")
+            operation_complete = True
 
     return name
 
@@ -1314,9 +1312,9 @@ def ingest_process(progress, activity_list, ingest_name, body, optics, orientati
     global image_list
     global file_names
     global average_time
-    global aborted
+    global operation_complete
 
-    while len(image_list) > 0:
+    while len(image_list) > 0 and not operation_complete:
         start_time = time.time()
 
         current_image = image_list[-1]
@@ -1344,15 +1342,16 @@ def ingest_process(progress, activity_list, ingest_name, body, optics, orientati
         except KeyError:
             pass
 
-        ingest_image(activity_list, body, optics, orientation, current_image, root, name, current_file, backup_root)
+        failed = ingest_image(activity_list, body, optics, orientation, current_image, root, name, current_file, backup_root)
+
+        if failed:
+            operation_complete = True
 
         progress["value"] = 100 - len(image_list) / total_files * 100
 
         average_time = (average_time * (num_files - 1) + time.time() - start_time) / num_files
 
-    if os.name == "nt":
-        pass
-        # notify.show_toast("Digestible", f"Ingest complete: Ingested {total_files} files")
+    notify.show_toast("Digestible", f"Ingest complete: Ingested {total_files} files")
 
 
 def digest_process(progress, activity_list, folder, exposure, blur, taste, colour, digest_dir):
@@ -1367,7 +1366,7 @@ def digest_process(progress, activity_list, folder, exposure, blur, taste, colou
             os.remove(asset_relative_path("preview.png"))
         return
 
-    while len(image_list) > 0:
+    while len(image_list) > 0 and not operation_complete:
         root = os.path.join(folder, "Digested Images")
 
         start_time = time.time()
@@ -1433,8 +1432,6 @@ def digest_process(progress, activity_list, folder, exposure, blur, taste, colou
                 os.makedirs(output)
 
             shutil.move(current_image, os.path.join(output, current_file))
-        except PermissionError:
-            operation_complete = True
         except OSError:
             operation_complete = True
 
@@ -1443,17 +1440,13 @@ def digest_process(progress, activity_list, folder, exposure, blur, taste, colou
             final_dir = os.path.join(output, name)
             os.rename(original_output_file_dir, final_dir)
 
-        if len(image_list) > 0:
-            progress["value"] = 100 - len(image_list) / total_files * 100
-            next_index = activity_list.size() + 1
-            activity_list.insert(next_index, message)
-            activity_list.yview_scroll(1, "unit")
-            average_time = (average_time * (num_files - 1) + time.time() - start_time) / num_files
-        else:
-            if os.name == "nt":
-                pass
-                # notify.show_toast("Digestible", f"Digest complete: Digested {total_files} images")
+        progress["value"] = 100 - len(image_list) / total_files * 100
+        next_index = activity_list.size() + 1
+        activity_list.insert(next_index, message)
+        activity_list.yview_scroll(1, "unit")
+        average_time = (average_time * (num_files - 1) + time.time() - start_time) / num_files
 
+    notify.show_toast("Digestible", f"Digest complete: Digested {total_files} files")
     clean_up(digest_dir)
 
 
@@ -1462,9 +1455,9 @@ def delegate_process(progress, activity_list, delegate_dir):
     global image_list
     global file_names
     global average_time
-    global aborted
+    global operation_complete
 
-    while len(image_list) > 0:
+    while len(image_list) > 0 and not operation_complete:
         start_time = time.time()
 
         current_image = image_list[-1]
@@ -1474,7 +1467,10 @@ def delegate_process(progress, activity_list, delegate_dir):
         editor_folder = current_image[1]
         original_path = current_image[0]
 
-        delegate_functions.delegate_image(name, editor_folder, original_path)
+        failed = delegate_functions.delegate_image(name, editor_folder, original_path)
+
+        if failed:
+            operation_complete = True
 
         num_files = total_files - len(image_list)
 
@@ -1486,11 +1482,11 @@ def delegate_process(progress, activity_list, delegate_dir):
         activity_list.insert(next_index, f"Delegated to {editor_folder.split('/')[-1]}: {name} ")
         activity_list.yview_scroll(1, "unit")
 
+    notify.show_toast("Digestible", f"Delegate complete: Delegated {total_files} files")
     clean_up(delegate_dir)
 
 
 def clean_up(path):
-    print(path)
     folders = []
     for i in os.listdir(path):
         if os.path.isdir(os.path.join(path, i)):
@@ -1501,9 +1497,7 @@ def clean_up(path):
         for root, dirs, files in os.walk(folder):
             for f in files:
                 if os.path.isfile(os.path.join(root, f)) and not f.startswith("."):
-                    print(root, f)
                     dir_size += os.path.getsize(os.path.join(root, f))
-        print(dir_size, folder)
         if dir_size == 0:
             try:
                 shutil.rmtree(os.path.join(folder))
@@ -1513,8 +1507,6 @@ def clean_up(path):
 
 def main(colour="#37352F", message=""):
     canvas = clear_screen(window)
-    global aborted
-    aborted = False
 
     window.title("Digestible")
 

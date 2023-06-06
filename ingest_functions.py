@@ -26,8 +26,6 @@ def ingest_image(activity_list, body, optics, orientation, current_image, root, 
                 else:
                     tags = exifread.process_file(file, stop_tag='Image Orientation', details=False)
 
-                file.close()
-
                 if body.get() == 1:
                     if "Image Model" in tags:
                         body_name = str(tags['Image Model']).strip()
@@ -57,6 +55,7 @@ def ingest_image(activity_list, body, optics, orientation, current_image, root, 
 
                 if body_name == "unknown body" and lens_name == "unknown lens" and orientation_str == "unknown":
                     output = "Unsorted (No image data)"
+            file.close()
 
         except FileNotFoundError:
             ingest_failed = True

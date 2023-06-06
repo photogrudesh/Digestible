@@ -1,11 +1,9 @@
 import colorsys
-import os
 
 from PIL import Image
 import numpy
 import rawpy
 import cv2
-import tkinter as tk
 
 from global_functions import asset_relative_path
 
@@ -69,8 +67,6 @@ def check_exposure(colour_image):
     if histogram[5] > 3000:
         exposure = "overexposed"
 
-    print(histogram, exposure)
-
     return exposure
 
 
@@ -130,7 +126,6 @@ def check_colour(image):
         if num_close > 6000 and min_dist < 15 and hsv[1] > 20:
             colour_dominance = colour_name[min_index]
 
-    print(dominant_rgb, hsv, colour_dominance)
     image.close()
 
     return colour_dominance
@@ -153,7 +148,6 @@ def get_image_contents(image, detector, predictor):
     classification = ["Unclassified"]
 
     for current_object in detections:
-        print(current_object["name"], " : ", current_object["percentage_probability"])
         if current_object["name"] == "person" and current_object["percentage_probability"] > 95:
             persons_present += 1
 
@@ -161,17 +155,16 @@ def get_image_contents(image, detector, predictor):
                         current_object["box_points"][3] - current_object["box_points"][1])
 
             person_area += area
-            print(area)
         elif current_object["percentage_probability"] > 95:
             area = (current_object["box_points"][2] - current_object["box_points"][0]) * (
                     current_object["box_points"][3] - current_object["box_points"][1])
 
-            if area > 0.2 * image.height * image.width:
+            if area > 0.3 * image.height * image.width:
                 objects_present.append(current_object["name"])
 
     if persons_present == 1 and person_area > 0.8 * image.height * image.width:
         classification = ["Portrait"]
-    elif persons_present > 3 and person_area > 0.7 * image.height * image.width:
+    elif persons_present > 5 and person_area > 0.7 * image.height * image.width:
         classification = ["Group Photo"]
     elif persons_present > 10:
         classification = ["Many people present", persons_present]
@@ -210,10 +203,9 @@ def check_image_blur(image):
     monochrome_file = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
     focus_index = cv2.Laplacian(monochrome_file, cv2.CV_64F).var()
 
-    if focus_index < 50:
+    if focus_index < 100:
         blur = True
     else:
         blur = False
-    print(focus_index)
 
     return blur
