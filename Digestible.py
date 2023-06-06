@@ -155,6 +155,11 @@ def settings():
                                   borderwidth=0, highlightthickness=0, relief="flat", padx=0, pady=0)
     add_backup_output.place(x=570, y=180, width=249, height=35)
 
+    reset_paths = tk.PhotoImage(file=asset_relative_path("reset_output.png"))
+    reset_output = tk.Button(image=reset_paths, bg="#FFFFFF", command=lambda: add_dir(default=False, clear=True), anchor="nw",
+                             borderwidth=0, highlightthickness=0, relief="flat", padx=0, pady=0)
+    reset_output.place(x=840, y=180, width=249, height=35)
+
     try:
         output = config['Program']['default output']
     except KeyError:
@@ -225,44 +230,65 @@ def settings():
                                highlightthickness=0, relief="flat", bg="#FFFFFF", anchor="w", padx=0, pady=0)
     update_taste.place(x=300.0, y=576, width=249, height=35)
 
+    reset_taste_img = tk.PhotoImage(file=asset_relative_path("reset_taste_btn.png"))
+    reset_taste = tk.Button(image=reset_taste_img, command=lambda: set_taste(reset=True), borderwidth=0,
+                            highlightthickness=0, relief="flat", bg="#FFFFFF", anchor="w", padx=0, pady=0)
+    reset_taste.place(x=570.0, y=576, width=249, height=35)
+
     canvas.create_text(300, 626, text="Select the folder that contains your pre-trained taste models (trained by imageai).\nRefer to the readme or user manual for more information.", anchor="nw", font=("Courier", 16 * -1))
 
     window.mainloop()
 
 
-def set_taste():
+def set_taste(reset=False):
     global taste_added
-    selected_folder = tk.filedialog.askdirectory(title="Select the folder containing taste models")
-    if os.path.exists(os.path.join(selected_folder, "resnet50-19c8e357.pth")) and os.path.exists(os.path.join(selected_folder, "yolov3.pt")):
-        config['Program']["taste path"] = selected_folder
+    global taste_unavailable
+
+    if reset:
+        config.remove_option("Program", "taste path")
+        taste_added = False
         write(config)
-        taste_added = True
-        main("Found taste files! Restart Digestible for changes to take effect. Taste will be available on next launch.")
+        main("#205445", "Taste model file path has been reset. Refer to the user guide for more information about setting up Taste.")
+        taste_unavailable = True
+
     else:
-        main("Folder does not contain both required files. Refer to the user guide for more information")
+        selected_folder = tk.filedialog.askdirectory(title="Select the folder containing taste models")
+        if os.path.exists(os.path.join(selected_folder, "resnet50-19c8e357.pth")) and os.path.exists(os.path.join(selected_folder, "yolov3.pt")):
+            config['Program']["taste path"] = selected_folder
+            write(config)
+            taste_added = True
+            main("#205445", "Found taste files! Restart Digestible for changes to take effect. Taste will be available on next launch.")
+        else:
+            main("#DE4E31", "Folder does not contain both required files. Refer to the user guide for more information about setting up Taste.")
 
 
-def add_dir(default):
-    if default:
-        selected_folder = tk.filedialog.askdirectory(title="Add ingest output folder")
-    else:
-        selected_folder = tk.filedialog.askdirectory(title="Add backup output folder")
-    # Change window title depending on which saved directory is being modified
-
-    if os.name == "nt":
-        selected_folder = selected_folder.replace("/", "\\")
-
-    if selected_folder and default:
-        config["Program"]["default output"] = str(selected_folder)
+def add_dir(default, clear=False):
+    if clear:
+        config.remove_option("Program", "backup output")
+        config.remove_option("Program", "default output")
         write(config)
-        main(f"Changed your default output to {selected_folder}")
-    elif selected_folder and not default:
-        config["Program"]["backup output"] = str(selected_folder)
-        write(config)
-        main(f"Changed your backup output to {selected_folder}")
+        main("#205445", "Reset saved output paths")
     else:
-        main("Did not change default output")
-    # edit config file if changes were made
+        if default:
+            selected_folder = tk.filedialog.askdirectory(title="Add ingest output folder")
+        else:
+            selected_folder = tk.filedialog.askdirectory(title="Add backup output folder")
+        # Change window title depending on which saved directory is being modified
+
+        if os.name == "nt":
+            selected_folder = selected_folder.replace("/", "\\")
+
+        if selected_folder and default:
+            config["Program"]["default output"] = str(selected_folder)
+            write(config)
+            main("#205445", f"Changed your default output to {selected_folder}")
+        elif selected_folder and not default:
+            config["Program"]["backup output"] = str(selected_folder)
+            write(config)
+            main("#205445", f"Changed your backup output to {selected_folder}")
+        else:
+            main("#37352F", "Did not change default output")
+        # edit config file if changes were made
 
 
 def add_editors(editor_string):
@@ -348,8 +374,8 @@ def help_menu():
     # Clear window, draw sidebar objects and set window title
 
     canvas.create_text(725, 150, anchor="n",
-                       text="\nWelcome! Digestible has three modes: Ingest, Digest, and Delegate. Each mode is designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nIngest mode: This mode copies images from cards under 100GB in size to your computer while automatically sorting images by camera body, lens used, and orientation so you don't have to.\n\nAfter you've ingested your images, it's time to start culling!\n\nDigest mode: This mode automatically separates your images based on how usable they are by analysing exposure and blurriness\n\nDelegate: Once you've sorted your images, it's time to delegate them to your team for post-production. This mode splits the sorted images between editors evenly so post-production can begin as soon as possible.\n\nIf you have digested the folder already, Digestible will automatically delegate the digested folder and delegated images will be inside.\n\n\n\nRemember, Digestible is designed for use with RAW image formats exclusively and will not function with JPEGs.",
-                       width=800, font=("Courier", 18 * -1), fill="#37352F")  # Todo
+                       text="\nWelcome! Each of Digestible's three modes are designed to streamline your photography workflow, so you can spend less time sorting through images and more time doing what you love.\n\nINGEST MODE: This mode copies images from cards under 100GB in size to your computer while automatically sorting images by camera body, lens used, and orientation so you don't have to.\n\nAfter you've ingested your images, it's time to start culling!\n\nDIGEST MODE: This mode automatically separates your images based on how usable they are by analysing exposure and blurriness. Digest will also attempt to sort images by colour dominance and, if set up, images will be sorted by objects in the frame (beta).\n\nDELEGATE MODE: Once you've sorted your images, it's time to delegate them to your team for post-production. This mode splits the sorted images between editors evenly so post-production can begin as soon as possible.\n\nIf you have digested the folder already, Digestible will automatically delegate the digested folder and delegated images will be inside.\n\nRemember, Digestible is designed for use with RAW image formats exclusively and will not function with JPEGs.",
+                       width=800, font=("Courier", 18 * -1), fill="#37352F")
     # Display help text
 
     window.mainloop()
@@ -407,9 +433,9 @@ def disable_ingest_button(canvas, ingest_name_var, button_1, message):
         if not os.path.isdir(str(config["Program"]["default output"])):
             config["Program"]["default output"] = ""
             write(config)
-            main("Default output path does not exist, add one in settings before ingesting")
+            main("#DE4E31", "Default output path is missing, add a new one in settings before ingesting")
     except KeyError:
-        main("Add a default output path in settings before ingesting")
+        main("#E88535", "Add a default output path in settings before ingesting")
     # check if output path exists, clear key if non-existent and return to main menu
 
     for i in illegal_characters:
@@ -523,7 +549,7 @@ def ingest():
     # generate placeholder text for unplugged inputs
 
     if len(image_list) == 0:
-        main("No RAW or videos files to ingest")
+        main("#DE4E31", "No RAW or videos files to ingest")
     # return to main if no ingestible files are present
 
     # draw ingest screen elements
@@ -601,12 +627,15 @@ def digest():
     window.title("Digestible · Digest")
 
     if selected_digest_dir == "":
-        selected_folder = tk.filedialog.askdirectory(title="Select folder to digest", initialdir=config["Program"]["default output"])
+        try:
+            selected_folder = tk.filedialog.askdirectory(title="Select folder to digest", initialdir=config["Program"]["default output"])
+        except KeyError:
+            selected_folder = tk.filedialog.askdirectory(title="Select folder to digest")
         if selected_folder != "":
             selected_digest_dir = selected_folder
             digest()
         else:
-            main("Digest aborted, no folder selected")
+            main("#DE4E31", "Digest aborted, no folder selected")
     # Ask user for folder to digest from
 
     image_list = []
@@ -614,12 +643,12 @@ def digest():
 
     if not os.path.exists(selected_digest_dir):
         selected_digest_dir = ""
-        main("Digest folder missing or destroyed")
+        main("#DE4E31", "Digest folder missing or destroyed")
     # check folder still exists, else return to main menu
 
     if "Digested Images" in os.listdir(selected_digest_dir):
         selected_digest_dir = ""
-        main('Folder has already been digested, delete the "Digested Images" folder to try again')
+        main("#E88535", 'Folder has already been digested, delete the "Digested Images" folder to try again')
     # check if digested images folder is in the selected folder and return to the main menu
 
     for root, dirs, files in os.walk(selected_digest_dir):
@@ -633,7 +662,7 @@ def digest():
 
     if len(image_list) == 0:
         selected_digest_dir = ""
-        main("No RAW images to digest")
+        main("#DE4E31", "No RAW images to digest")
     # return to main if no Raw files are present
 
     canvas = clear_screen(window)
@@ -685,7 +714,7 @@ def digest():
                            font=("Courier", 16 * -1))
 
     canvas.create_text(725, 180, anchor="n",
-                       text="\nWelcome to Digest. This should be the second part of your improved post-production workflow, After ingesting, you might want to cull through the images you've just taken, but why bother doing that yourself. The digest mode has 3 options: Colour dominance, Exposure and Blur. \n\nExposure is the simplest and most common reason for an unusable image, Digestible will identify and remove any irrecoverably underexposed or overexposed images from your ingest folder. Be careful when digesting images if shot intentionally in low light.\n\nThe blur option will identify unusable images based on how blurry the image is. Use with caution if images are intentionally blurry (e.g. panning action shots).\n\nFinally the colour dominance option will split images based on the colour that is most dominant in the frame. \n\nRemember digest mode is not human and does not perceive images the same way you do.\n\nHappy Digesting!",
+                       text="\nWelcome to Digest. This should be the second part of your improved post-production workflow, After ingesting, you might want to cull through the images you've just taken, but why bother doing that yourself. The digest mode has 4 options: Colour dominance, Exposure, Blur and Taste.\n\nExposure is the simplest and most common reason for an unusable image, Digestible will identify and remove any irrecoverably underexposed or overexposed images from your ingest folder. Be careful when digesting images if shot intentionally in low light.\n\nThe blur option will identify unusable images based on how blurry the image is. Use with caution if images are intentionally blurry (e.g. panning action shots).\n\nThe colour dominance option will split images based on the colour that is most dominant in the frame.\n\nFinally, Taste will attempt to sort your images based on what is actually present in each frame and group them into folders.\n\nRemember digest mode is not human and does not perceive images the same way you do.\n\nHappy Digesting!",
                        width=800, font=("Courier", 16 * -1), fill="#37352F")
 
     canvas.create_text(300.0, 610.0, anchor="nw", text="Options:", fill="#37352F", font=("Courier", 16 * -1, "bold"))
@@ -750,7 +779,11 @@ def change_dir(operation):
     global selected_digest_dir
     global selected_delegation_dir
 
-    selected_folder = tk.filedialog.askdirectory(title=f"Select folder to {operation}")
+    try:
+        selected_folder = tk.filedialog.askdirectory(title=f"Select folder to {operation}", initialdir=config["Program"]["default output"])
+    except KeyError:
+        selected_folder = tk.filedialog.askdirectory(title=f"Select folder to {operation}")
+
     if selected_folder != "" and operation == "digest":
         selected_digest_dir = selected_folder
         digest()
@@ -771,12 +804,16 @@ def delegate():
     window.title("Digestible · Delegate")
 
     if selected_delegation_dir == "":
-        selected_folder = tk.filedialog.askdirectory(title="Select folder to digest", initialdir=config["Program"]["default output"])
+        try:
+            selected_folder = tk.filedialog.askdirectory(title="Select folder to delegate", initialdir=config["Program"]["default output"])
+        except KeyError:
+            selected_folder = tk.filedialog.askdirectory(title="Select folder to delegate")
+
         if selected_folder != "":
             selected_delegation_dir = selected_folder
             delegate()
         else:
-            main("Delegate aborted, no folder selected")
+            main("#DE4E31", "Delegate aborted, no folder selected")
     # Ask for directory to delegate from, if none provided return to main menu and display error
 
     image_list = []
@@ -786,7 +823,7 @@ def delegate():
 
     if not os.path.exists(selected_delegation_dir):
         selected_delegation_dir = ""
-        main("Delegate folder missing or destroyed")
+        main("#DE4E31", "Delegate folder missing or destroyed")
     # Check to see if delegate folder still exists, if not return to main menu
 
     if "Digested Images" in os.listdir(selected_delegation_dir):
@@ -796,7 +833,7 @@ def delegate():
 
     if "Delegated Images" in os.listdir(selected_delegation_dir):
         selected_delegation_dir = ""
-        main('Folder has already been delegated, delete the "Delegated Images" folder to try again')
+        main("#DE4E31", 'Folder has already been delegated, delete the "Delegated Images" folder to try again')
     # Check to see if folder has been delegated, if so return to main menu and display warning
 
     for root, dirs, files in os.walk(selected_delegation_dir):
@@ -811,7 +848,7 @@ def delegate():
 
     if len(image_list) == 0:
         selected_delegation_dir = ""
-        main("No RAW files to delegate")
+        main("#DE4E31", "No RAW files to delegate")
     # if no raw files present, return to main menu and display warning
 
     canvas = clear_screen(window)
@@ -945,7 +982,7 @@ def delegate():
         e12.place(x=980.0, y=422.0, anchor="n")
 
     editor_names_var = tk.StringVar()
-    editor_names = tk.Entry(window, textvariable=editor_names_var, font=("Courier", 15), width=47)
+    editor_names = tk.Entry(window, textvariable=editor_names_var, font=("Courier", 15), width=37)
     editor_names.insert(0, f"Type extra names here")
     editor_names.tk_setPalette(background="#FFFFFF")
     editor_names.focus_set()
@@ -1474,7 +1511,7 @@ def clean_up(path):
                 pass
 
 
-def main(message=""):
+def main(colour="#37352F", message=""):
     canvas = clear_screen(window)
     global aborted
     aborted = False
@@ -1498,14 +1535,18 @@ def main(message=""):
     except KeyError:
         pass
 
+    style = "bold"
 
     if message == "" and taste_unavailable and taste_added:
         message = "Found taste files! Restart Digestible for changes to take effect. Taste will be available on next launch."
+        colour = "#205445"
     elif message == "" and taste_unavailable:
-        message = "Taste is unavailable, ensure you have downloaded the required files and have changed the required option in settings."
+        message = "To begin using Taste (beta), ensure you have downloaded the required files and modified the specified option in settings. Refer to the user guide for more information."
+        colour = "#37352F"
+        style = "normal"
 
-    canvas.create_text(290, 670, anchor="sw", justify="left", text=message, fill="#FF0000",
-                       font=("Courier", 16 * -1, "bold"), width=350)
+    canvas.create_text(290, 670, anchor="sw", justify="left", text=message, fill=colour,
+                       font=("Courier", 16 * -1, style), width=340)
 
     banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets()
 
@@ -1563,10 +1604,10 @@ def check_completion(canvas, abort_button, main_btn, ingest_btn, digest_btn, del
 
     if len(image_list) == 0 and operation_complete:
         operation_complete = False
-        main("Operation complete")
+        main("#205445", "Operation complete")
     elif operation_complete:
         operation_complete = False
-        main("Operation aborted")
+        main("#DE4E31", "Operation aborted")
 
     canvas.after(200, lambda: check_completion(canvas, abort_button, main_btn, ingest_btn, digest_btn, delegate_btn, help_btn, settings_btn))
 
