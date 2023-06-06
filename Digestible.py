@@ -65,6 +65,7 @@ window.resizable(False, False)
 version_number = "Digestible v0.4.0"
 
 # Initiate Windows toast notification service
+notify = ToastNotifier()
 window.iconbitmap(asset_relative_path("Digestible Icon.ico"))
 icon_image = tk.Image("photo", file=asset_relative_path("Digestible Icon.png"))
 window.tk.call('wm', 'iconphoto', window._w, icon_image)
@@ -644,7 +645,7 @@ def digest():
 
     if "Digested Images" in os.listdir(selected_digest_dir):
         selected_digest_dir = ""
-        main("#E88535", 'Folder has already been digested, delete the "Digested Images" folder to try again')
+        main("#E88535", 'Folder has already been digested, ingest again or copy a backup to try again.')
     # check if digested images folder is in the selected folder and return to the main menu
 
     for root, dirs, files in os.walk(selected_digest_dir):
@@ -717,22 +718,22 @@ def digest():
 
     taste, colour, exposure, blur = tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar()
 
-    e1 = tk.Checkbutton(window, text="Colour dominance", variable=colour)
-    e1.tk_setPalette(background="#ffffff", foreground="#37352F", selectcolor="#FFFFFF")
-    e1.place(x=388.0, y=644.0)
+    colour_btn = tk.Checkbutton(window, text="Colour dominance", variable=colour)
+    colour_btn.tk_setPalette(background="#ffffff", foreground="#37352F", selectcolor="#FFFFFF")
+    colour_btn.place(x=388.0, y=644.0)
 
-    e3 = tk.Checkbutton(window, text="Blur detection", variable=blur)
-    e3.tk_setPalette(background="#ffffff", foreground="#37352F", selectcolor="#FFFFFF")
-    e3.place(x=535.0, y=644.0)
+    blur_btn = tk.Checkbutton(window, text="Blur detection", variable=blur)
+    blur_btn.tk_setPalette(background="#ffffff", foreground="#37352F", selectcolor="#FFFFFF")
+    blur_btn.place(x=535.0, y=644.0)
 
-    e2 = tk.Checkbutton(window, text="Exposure", variable=exposure)
-    e2.tk_setPalette(background="#ffffff", foreground="#37352F", selectcolor="#FFFFFF")
-    e2.place(x=300.0, y=644.0)
+    exposure_btn = tk.Checkbutton(window, text="Exposure", variable=exposure)
+    exposure_btn.tk_setPalette(background="#ffffff", foreground="#37352F", selectcolor="#FFFFFF")
+    exposure_btn.place(x=300.0, y=644.0)
 
     if not taste_unavailable:
-        e3 = tk.Checkbutton(window, text="Taste (beta)", variable=taste)
-        e3.tk_setPalette(background="#ffffff", foreground="#37352F", selectcolor="#FFFFFF")
-        e3.place(x=655.0, y=644.0)
+        taste_btn = tk.Checkbutton(window, text="Taste (beta)", variable=taste)
+        taste_btn.tk_setPalette(background="#ffffff", foreground="#37352F", selectcolor="#FFFFFF")
+        taste_btn.place(x=655.0, y=644.0)
 
     # Draw screen elements
 
@@ -747,7 +748,7 @@ def digest():
         file_path += "..."
     # shorten file path if too long
 
-    canvas.create_text(725.0, 135.0, anchor="n", text=f"Digesting from: {file_path}",
+    digesting_from = canvas.create_text(725.0, 135.0, anchor="n", text=f"Digesting from: {file_path}",
                        fill="#37352F",
                        font=("Courier", 18 * -1))
 
@@ -763,9 +764,21 @@ def digest():
                          pady=0)
     button_1.place(x=1045.0, y=638.0, width=125, height=35)
 
+    canvas.after(1, lambda: check_digest_options(canvas, taste, colour, exposure, blur, button_1, digesting_from, file_path))
+
     # Draw remaining screen elements
 
     window.mainloop()
+
+
+def check_digest_options(canvas, taste, colour, exposure, blur, button_1, digesting_from, file_path):
+    if taste.get() == 0 and colour.get() == 0 and exposure.get() == 0 and blur.get() == 0:
+        canvas.itemconfig(digesting_from, text="Select an option to begin digesting")
+        button_1["state"] = "disabled"
+    else:
+        canvas.itemconfig(digesting_from, text=f"Digesting from: {file_path}")
+        button_1["state"] = "normal"
+    canvas.after(100, lambda: check_digest_options(canvas, taste, colour, exposure, blur, button_1, digesting_from, file_path))
 
 
 def change_dir(operation):
@@ -1257,29 +1270,22 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
     window.mainloop()
 
 
+
 def update_preview(preview):
-    prev_image = None
     while len(image_list) > 0 and not operation_complete:
-        time.sleep(0.5)
+        time.sleep(1)
         try:
-            uncropped_image = Image.open(asset_relative_path("preview.png"))
-            if uncropped_image != prev_image:
-                if uncropped_image.height > uncropped_image.width:
-                    crop_from_y = round((uncropped_image.height - uncropped_image.width) / 2)
-                    image_to_show = uncropped_image.crop((0, crop_from_y, uncropped_image.width, crop_from_y + uncropped_image.width))
-
-                else:
-                    crop_from_x = round((uncropped_image.width - uncropped_image.height) / 2)
-                    image_to_show = uncropped_image.crop((crop_from_x, 0, crop_from_x + uncropped_image.height, uncropped_image.height))
-
-                image_to_show = image_to_show.resize((200, 200))
-                preview_img = ImageTk.PhotoImage(image_to_show)
-                preview.configure(image=preview_img)
-
-            prev_image = uncropped_image
-            del preview_img
-            uncropped_image.close()
-
+            image_to_show = Image.open(asset_relative_path("preview.png"))
+            if image_to_show.height > image_to_show.width:
+                crop_from_y = round((image_to_show.height - image_to_show.width) / 2)
+                image_to_show = image_to_show.crop((0, crop_from_y, image_to_show.width, crop_from_y + image_to_show.width))
+            elif image_to_show.width > image_to_show.height:
+                crop_from_x = round((image_to_show.width - image_to_show.height) / 2)
+                image_to_show = image_to_show.crop((crop_from_x, 0, crop_from_x + image_to_show.height, image_to_show.height))
+            image_to_show = image_to_show.resize((200, 200))
+            preview_img = ImageTk.PhotoImage(image_to_show)
+            preview.configure(image=preview_img)
+            image_to_show.close()
         except PIL.UnidentifiedImageError:
             pass
         except FileNotFoundError:
@@ -1288,8 +1294,6 @@ def update_preview(preview):
             pass
         except SyntaxError:
             pass
-
-    del prev_image
 
 
 def check_filename(current_file, current_image):
@@ -1417,7 +1421,6 @@ def digest_process(progress, activity_list, folder, exposure, blur, taste, colou
                     message += "blurry and rejected"
 
             if not reject:
-                message += "accepted"
 
                 if taste.get() == 1:
                     classification = digest_functions.get_image_contents(image_preview, detector, predictor)

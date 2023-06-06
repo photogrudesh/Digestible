@@ -159,7 +159,7 @@ def get_image_contents(image, detector, predictor):
             area = (current_object["box_points"][2] - current_object["box_points"][0]) * (
                     current_object["box_points"][3] - current_object["box_points"][1])
 
-            if area > 0.3 * image.height * image.width:
+            if area > 0.5 * image.height * image.width:
                 objects_present.append(current_object["name"])
 
     if persons_present == 1 and person_area > 0.8 * image.height * image.width:
@@ -203,7 +203,7 @@ def check_image_blur(image):
     monochrome_file = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
     focus_index = cv2.Laplacian(monochrome_file, cv2.CV_64F).var()
 
-    if focus_index < 100:
+    if focus_index < 30:
         blur = True
     else:
         blur = False
