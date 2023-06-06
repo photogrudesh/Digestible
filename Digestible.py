@@ -62,7 +62,7 @@ window = tk.Tk()
 window.geometry("1200x700")
 window.configure(bg="#FFFFFF")
 window.resizable(False, False)
-version_number = "Digestible v0.4.0"
+version_number = "Digestible v0.4.1"
 
 # Initiate Windows toast notification service
 notify = ToastNotifier()
@@ -1240,12 +1240,12 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
         preview = tk.Label(image=placeholder)
         preview.place(x=945, y=150)
 
-        canvas.create_text(945, 381, text="Current image", anchor="w")
+        canvas.create_text(945, 381, text="Current image", anchor="w", font=("Courier", 12 * -1))
 
         logo_img = Image.open(asset_relative_path("Digestible Icon.png")).resize((200, 200))
         logo = ImageTk.PhotoImage(logo_img)
-        preview = tk.Label(image=logo)
-        preview.place(x=945, y=412)
+        logo_display = tk.Label(image=logo)
+        logo_display.place(x=945, y=412)
 
         t1 = Thread(
             target=lambda: digest_process(progress, activity_list, folder, exposure, blur, taste, colour, selected_digest_dir))
