@@ -1243,8 +1243,8 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
 
         logo_img = Image.open(asset_relative_path("Digestible Icon.png")).resize((200, 200))
         logo = ImageTk.PhotoImage(logo_img)
-        preview = tk.Label(image=logo)
-        preview.place(x=945, y=412)
+        logo_image = tk.Label(image=logo)
+        logo_image.place(x=945, y=412)
 
         t1 = Thread(
             target=lambda: digest_process(progress, activity_list, folder, exposure, blur, taste, colour, selected_digest_dir))
@@ -1426,8 +1426,6 @@ def digest_process(progress, activity_list, folder, exposure, blur, taste, colou
                     message += "blurry and rejected"
 
             if not reject:
-                message += "accepted"
-
                 if taste.get() == 1:
                     classification = digest_functions.get_image_contents(image_preview, detector, predictor)
                     output = os.path.join(output, classification[0])
