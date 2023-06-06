@@ -20,6 +20,8 @@ def is_media(file):
     video_extensions = ["webm", "mpg", "mp2", "mpeg", "mpe", "mpv", "ogg", "mp4", "m4p", "m4v", "avi", "wmv", "mov",
                         "qt", "flv", "swf"]
 
+    # check filename extension and determine if it is a valid raw image or video format
+
     if ext.lower() in raw_extensions:
         media = "image"
     elif ext.lower() in video_extensions:
@@ -43,6 +45,7 @@ def clear_screen(window):
     canvas = tk.Canvas(window, bg="#FFFFFF", height=700, width=1200, bd=0, highlightthickness=0, relief="ridge")
 
     canvas.place(x=0, y=0)
+    # clear screen by destroying all available objects
 
     return canvas
 
@@ -52,6 +55,7 @@ def asset_relative_path(path):
     full_path = os.path.join(root_path, path)
 
     # full_path = os.path.join(environment.get_main_path(), path)
+    # return path to collect assets from
 
     return full_path
 
@@ -59,10 +63,12 @@ def asset_relative_path(path):
 def write(config_file):
     with open('./config.dgstbl', 'w') as configfile:
         config_file.write(configfile)
+    # update config file
 
 
 def collect_inputs():
     inputs = []
+    # get available volumes
 
     for i in psutil.disk_partitions():
         add_volume = True
@@ -71,6 +77,7 @@ def collect_inputs():
                 add_volume = False
             if os.name == "posix" and i.mountpoint.startswith("/System") or i.mountpoint == "/":
                 add_volume = False
+            # do not add volume if it is too large or is a root directory
 
             if add_volume:
                 inputs.append(i.mountpoint)
@@ -83,3 +90,4 @@ def collect_inputs():
 def make_btn_reactive(button_object, hover_colour, default_colour):
     button_object.bind("<Enter>", func=lambda: button_object.config(background=hover_colour))
     button_object.bind("<Leave>", func=lambda: button_object.config(background=default_colour))
+    # bind inactive and active images to button objects

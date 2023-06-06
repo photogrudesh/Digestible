@@ -12,3 +12,4 @@ def delegate_image(name, editor_folder, original_path):
         shutil.move(original_path, output)
     except OSError:
         return True
+    # Copy image to destination path

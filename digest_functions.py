@@ -17,6 +17,7 @@ def get_thumbnail(image):
         del raw
         del rgb
         thumbnail_image.save(asset_relative_path("preview.png"))
+        # Generate thumbnail using Rawpy
     except rawpy._rawpy.LibRawFileUnsupportedError:
         return "no thumbnail"
 
@@ -27,6 +28,7 @@ def check_exposure(colour_image):
     exposure = "exposed correctly"
     colour_image = colour_image.resize((150, 120))
     bw_image = colour_image.convert("L")
+    # generate black and white version of resized thumbnail
 
     histogram = [0, 0, 0, 0, 0, 0, 0]
 
@@ -47,6 +49,7 @@ def check_exposure(colour_image):
                 histogram[5] += 1
             elif this_pixel == 0:
                 histogram[6] += 1
+    # generate numeric "histogram"
 
     image_dimensions = bw_image.height * bw_image.width
 
@@ -66,6 +69,7 @@ def check_exposure(colour_image):
         exposure = "overexposed"
     if histogram[5] > 3000:
         exposure = "overexposed"
+    # determine exposure
 
     return exposure
 
@@ -73,10 +77,6 @@ def check_exposure(colour_image):
 def check_colour(image):
     resized = image.resize((1, 1))
     dominant_rgb = resized.getpixel((0, 0))
-
-    # image.save(asset_relative_path("thumbnail.jpg"))
-    # extracted_colour = Ct(asset_relative_path("thumbnail.jpg"))
-    # dominant_rgb = extracted_colour.get_color(quality=1)
 
     colour_deg = [0, 45, 90, 120, 180, 210, 240, 270, 300, 400]
     colour_name = ["Red", "Orange", "Green", "Green", "Light Blue", "Light Blue", "Blue", "Purple", "Purple", "Red"]
@@ -102,6 +102,7 @@ def check_colour(image):
         else:
             pass
 
+    # Determine dominant colour based on how many pixels are close to the detected colour
     if dominant > 0:
         for i in colour_deg:
             if min_dist is None:
@@ -125,6 +126,7 @@ def check_colour(image):
 
         if num_close > 6000 and min_dist < 15 and hsv[1] > 20:
             colour_dominance = colour_name[min_index]
+        # if criteria are met, determine colour name
 
     image.close()
 
@@ -135,12 +137,14 @@ def get_image_contents(image, detector, predictor):
     image.save(asset_relative_path("thumbnail.jpg"))
     input_im = asset_relative_path("thumbnail.jpg")
     taste_output_generated = False
+    # Save and reopen thumbnail
 
     detections = detector.detectObjectsFromImage(
         input_image=input_im,
         output_image_path=asset_relative_path("taste_output.jpg"),
         minimum_percentage_probability=30
     )
+    # detect objects using yolov3
 
     objects_present = []
     persons_present = 0
@@ -159,8 +163,9 @@ def get_image_contents(image, detector, predictor):
             area = (current_object["box_points"][2] - current_object["box_points"][0]) * (
                     current_object["box_points"][3] - current_object["box_points"][1])
 
-            if area > 0.3 * image.height * image.width:
+            if area > 0.5 * image.height * image.width:
                 objects_present.append(current_object["name"])
+        # determine areas of people and objects present
 
     if persons_present == 1 and person_area > 0.8 * image.height * image.width:
         classification = ["Portrait"]
@@ -172,8 +177,10 @@ def get_image_contents(image, detector, predictor):
         classification = ["People present", persons_present]
     elif len(objects_present) > 0:
         classification = [f"{objects_present[0]}"]
+    # classify images differently based on the number of people present and the area covered by people
 
     if classification[0] == "Unclassified":
+        # predict contents of image using resnet if no objects were found
         prediction, probability = predictor.classifyImage(
             input_im, result_count=1
         )
@@ -192,6 +199,7 @@ def get_image_contents(image, detector, predictor):
     else:
         preview = image
         preview.save(asset_relative_path("preview.png"))
+    # save preview to be displayed on screen
 
     return classification
 
@@ -203,9 +211,10 @@ def check_image_blur(image):
     monochrome_file = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
     focus_index = cv2.Laplacian(monochrome_file, cv2.CV_64F).var()
 
-    if focus_index < 100:
+    if focus_index < 30:
         blur = True
     else:
         blur = False
+    # If calculated focus index is too low, declare image as blurry
 
     return blur

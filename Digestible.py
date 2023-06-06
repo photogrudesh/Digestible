@@ -65,6 +65,7 @@ window.resizable(False, False)
 version_number = "Digestible v0.4.0"
 
 # Initiate Windows toast notification service
+notify = ToastNotifier()
 window.iconbitmap(asset_relative_path("Digestible Icon.ico"))
 icon_image = tk.Image("photo", file=asset_relative_path("Digestible Icon.png"))
 window.tk.call('wm', 'iconphoto', window._w, icon_image)
@@ -80,7 +81,6 @@ saved_editors = []
 selected_digest_dir = ""
 selected_delegation_dir = ""
 last_eta = 0
-started_calculation = False
 operation_complete = False
 taste_added = False
 
@@ -974,12 +974,16 @@ def delegate():
         e12.tk_setPalette(background="#FFFFFF", foreground="white", selectcolor="#FFFFFF")
         e12.place(x=980.0, y=422.0, anchor="n")
 
+    # Display checkboxes if editors are saved
+
     editor_names_var = tk.StringVar()
     editor_names = tk.Entry(window, textvariable=editor_names_var, font=("Courier", 15), width=37)
     editor_names.insert(0, f"Type extra names here")
     editor_names.tk_setPalette(background="#FFFFFF")
     editor_names.focus_set()
     editor_names.place(x=300.0, y=641, anchor="nw")
+
+    # display text field for additional editors
 
     if digested_found:
         canvas.create_text(725.0, 185.0, anchor="s",
@@ -1049,9 +1053,12 @@ def check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4
     if d2e12.get() == 1 and editors[11] != "":
         delegating_to.append(editors[11])
 
+    # save editor names to a list if the corresponding checkbox is selected
+
     for i in illegal_characters:
         if i in entered_editors.get():
             illegal_name = True
+    # check for presence of windows illegal characters
 
     if illegal_name:
         message = 'Avoid using \\ / : * ? " < > |'
@@ -1064,6 +1071,7 @@ def check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4
             if name_to_add != "Type names here" and name_to_add != "" and len(i) < 20 and name_to_add.lower() not in delegating_to_lower and len(delegating_to) < 33:
                 delegating_to.append(name_to_add)
                 delegating_to_lower.append(name_to_add.lower())
+                # if new name meets criteria, add to list. Also add a lowercase copy to a separate list.
 
         if len(delegating_to) == 0:
             message = "Delegating to nobody"
@@ -1071,6 +1079,7 @@ def check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4
             message = f"Images will be delegated to the following editors\n\n {str(delegating_to).replace('[', '').replace(']', '')}"
 
     canvas.itemconfig(delegating_to_message, text=message)
+    # update on screen message
 
     if len(delegating_to) == 0:
         canvas.itemconfig(images_per_person_message, text=f"Select some editors to begin delegating.")
@@ -1080,6 +1089,7 @@ def check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4
         start_button["state"] = "disabled"
     else:
         file_path = f"{selected_delegation_dir.split('/')[-2]}/{selected_delegation_dir.split('/')[-1]}"
+    # Disable start button if enough names are not added, otherwise display folder being delegated
 
         if len(file_path) > 41:
             file_path = f"{selected_delegation_dir.split('/')[-1]}"
@@ -1087,10 +1097,12 @@ def check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4
             while len(file_path) > 37:
                 file_path = file_path[:-1] + ''
             file_path += "..."
+        # shorten name before displaying if file path is too long
 
         canvas.itemconfig(images_per_person_message,
                           text=f"{file_path} | Total Images: {total_files}  |  About {round(total_files / len(delegating_to))} images per person")
         start_button["state"] = "normal"
+        # allow start button to be pressed
 
     canvas.after(50,
                  lambda: check_selected_editors(canvas, delegating_to_message, d2e1, d2e2, d2e3, d2e4, d2e5, d2e6, d2e7,
@@ -1103,12 +1115,10 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
     global image_list
     global total_files
     global average_time
-    global started_calculation
     global delegating_to
     global selected_delegation_dir
     global selected_digest_dir
 
-    started_calculation = False
     average_time = 0
 
     window.title(f"Digestible · {operation_type}")
@@ -1151,8 +1161,6 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
 
     # Clear window, draw sidebar objects and set window title
 
-    time.sleep(1)
-
     if operation_type == "Delegating":
         output = os.path.join(folder, "Delegated Images")
 
@@ -1185,6 +1193,7 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
                 current_folder += 1
 
         image_list.sort(key=lambda item: item[1])
+    # if delegating, process image_list accordingly
 
     button_image_1 = tk.PhotoImage(file=asset_relative_path("abort_btn.png"))
     button_1 = tk.Button(image=button_image_1, borderwidth=0, highlightthickness=0,
@@ -1192,6 +1201,7 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
                          relief="flat", padx=0, pady=0)
 
     button_1.place(x=1045.0, y=638.0, width=125, height=35)
+    # display abort button
 
     if drives is None:
         canvas.create_text(725.0, 115.0, anchor="n",
@@ -1205,6 +1215,7 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
         canvas.create_text(725.0, 115.0, anchor="n",
                            text=f"{operation_type} {str(total_files)} files from {str(drives)} drives", fill="#37352F",
                            font=("Courier", 16 * -1))
+    # display header text with operation information
 
     images_left = canvas.create_text(650.0, 618.0, anchor="n", text="", fill="#37352F", font=("Courier", 12 * -1))
 
@@ -1214,6 +1225,7 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
     time_remaining = canvas.create_text(650.0, 674.0, anchor="n", text="", fill="#37352F",
                                         font=("Courier", 12 * -1))
     activity_list = tk.Listbox(font=("Courier", 20 * -1))
+    # display time remaining text and place a listbox to display output messages
 
     if operation_type == "Ingesting":
         t1 = Thread(target=lambda: ingest_process(progress, activity_list, ingest_name, body, optics, orientation))
@@ -1249,6 +1261,8 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
     t2 = Thread(target=lambda: time_left(canvas, time_remaining, images_left))
     t2.start()
 
+    # start threaded processes to begin the operation
+
     canvas.after(1, check_completion(canvas, button_1, main_btn, ingest_btn, digest_btn, delegate_btn, help_btn, settings_btn))
 
     selected_delegation_dir = ""
@@ -1258,28 +1272,25 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
 
 
 def update_preview(preview):
-    prev_image = None
+    # Generate and display a preview of the image being digested
+    # This runs as a thread
+
     while len(image_list) > 0 and not operation_complete:
-        time.sleep(0.5)
+        time.sleep(1)
         try:
-            uncropped_image = Image.open(asset_relative_path("preview.png"))
-            if uncropped_image != prev_image:
-                if uncropped_image.height > uncropped_image.width:
-                    crop_from_y = round((uncropped_image.height - uncropped_image.width) / 2)
-                    image_to_show = uncropped_image.crop((0, crop_from_y, uncropped_image.width, crop_from_y + uncropped_image.width))
-
-                else:
-                    crop_from_x = round((uncropped_image.width - uncropped_image.height) / 2)
-                    image_to_show = uncropped_image.crop((crop_from_x, 0, crop_from_x + uncropped_image.height, uncropped_image.height))
-
-                image_to_show = image_to_show.resize((200, 200))
-                preview_img = ImageTk.PhotoImage(image_to_show)
-                preview.configure(image=preview_img)
-
-            prev_image = uncropped_image
-            del preview_img
-            uncropped_image.close()
-
+            image_to_show = Image.open(asset_relative_path("preview.png"))
+            if image_to_show.height > image_to_show.width:
+                crop_from_y = round((image_to_show.height - image_to_show.width) / 2)
+                image_to_show = image_to_show.crop(
+                    (0, crop_from_y, image_to_show.width, crop_from_y + image_to_show.width))
+            elif image_to_show.width > image_to_show.height:
+                crop_from_x = round((image_to_show.width - image_to_show.height) / 2)
+                image_to_show = image_to_show.crop(
+                    (crop_from_x, 0, crop_from_x + image_to_show.height, image_to_show.height))
+            image_to_show = image_to_show.resize((200, 200))
+            preview_img = ImageTk.PhotoImage(image_to_show)
+            preview.configure(image=preview_img)
+            image_to_show.close()
         except PIL.UnidentifiedImageError:
             pass
         except FileNotFoundError:
@@ -1289,10 +1300,9 @@ def update_preview(preview):
         except SyntaxError:
             pass
 
-    del prev_image
-
 
 def check_filename(current_file, current_image):
+    # Check if the filename exists more than once in the image list, if so, generate a name either with the time of capture or time of ingest
     global operation_complete
     name = ""
 
@@ -1308,7 +1318,7 @@ def check_filename(current_file, current_image):
             except KeyError:
                 current_time = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
 
-                name = image_name + " " + str(current_time) + " duplicate" + "." + extension
+                name = image_name + " ingested at " + str(current_time) + "." + extension
 
             file.close()
 
@@ -1327,15 +1337,15 @@ def ingest_process(progress, activity_list, ingest_name, body, optics, orientati
 
     while len(image_list) > 0 and not operation_complete:
         start_time = time.time()
+        # save current unix timestamp
 
         current_image = image_list[-1]
-        if os.name == "nt":
-            current_file = current_image.split("\\")[-1]
-        else:
-            current_file = current_image.split("/")[-1]
+        current_file = file_names[-1]
+        # extract filename from path
 
         del image_list[-1]
         del file_names[-1]
+        # delete filename and filepath from list
 
         num_files = total_files - len(image_list)
 
@@ -1352,6 +1362,7 @@ def ingest_process(progress, activity_list, ingest_name, body, optics, orientati
                 backup_root = os.path.join(backup, ingest_name)
         except KeyError:
             pass
+        # check if backup location is present
 
         failed = ingest_image(activity_list, body, optics, orientation, current_image, root, name, current_file, backup_root)
 
@@ -1361,8 +1372,10 @@ def ingest_process(progress, activity_list, ingest_name, body, optics, orientati
         progress["value"] = 100 - len(image_list) / total_files * 100
 
         average_time = (average_time * (num_files - 1) + time.time() - start_time) / num_files
+        # update average time and progress bar
 
     notify.show_toast("Digestible", f"Ingest complete: Ingested {total_files} files")
+    # send windows toast notification when operation is complete
 
 
 def digest_process(progress, activity_list, folder, exposure, blur, taste, colour, digest_dir):
@@ -1371,11 +1384,6 @@ def digest_process(progress, activity_list, folder, exposure, blur, taste, colou
     global file_names
     global average_time
     global operation_complete
-
-    if len(image_list) == 0:
-        if os.path.isfile(asset_relative_path("preview.png")):
-            os.remove(asset_relative_path("preview.png"))
-        return
 
     while len(image_list) > 0 and not operation_complete:
         root = os.path.join(folder, "Digested Images")
@@ -1386,6 +1394,7 @@ def digest_process(progress, activity_list, folder, exposure, blur, taste, colou
         current_file = file_names[-1]
         del image_list[-1]
         del file_names[-1]
+        # Update list of images
 
         message = f"{current_file}: "
 
@@ -1434,9 +1443,11 @@ def digest_process(progress, activity_list, folder, exposure, blur, taste, colou
                     message += f" ({colour_dominance})"
 
             del image_preview
+            # Process images and determine the classification
         else:
             output = os.path.join(output, "No thumbnail available")
             message += "not tested (could not generate a thumbnail)"
+            # If the image was not tested, display error message
 
         try:
             if not os.path.exists(output):
@@ -1445,20 +1456,28 @@ def digest_process(progress, activity_list, folder, exposure, blur, taste, colou
             shutil.move(current_image, os.path.join(output, current_file))
         except OSError:
             operation_complete = True
+        # Attempt to move image, if not able to, fail and end process
 
         if name != "":
             original_output_file_dir = os.path.join(output, current_file)
             final_dir = os.path.join(output, name)
             os.rename(original_output_file_dir, final_dir)
+        # Rename copied file if necessary
 
         progress["value"] = 100 - len(image_list) / total_files * 100
         next_index = activity_list.size() + 1
         activity_list.insert(next_index, message)
         activity_list.yview_scroll(1, "unit")
         average_time = (average_time * (num_files - 1) + time.time() - start_time) / num_files
+        # update average time and output text
+
+    if os.path.isfile(asset_relative_path("preview.png")):
+        os.remove(asset_relative_path("preview.png"))
+    # Delete preview image if present
 
     notify.show_toast("Digestible", f"Digest complete: Digested {total_files} files")
     clean_up(digest_dir)
+    # Delete empty folders and display windows notification
 
 
 def delegate_process(progress, activity_list, delegate_dir):
@@ -1479,6 +1498,7 @@ def delegate_process(progress, activity_list, delegate_dir):
         original_path = current_image[0]
 
         failed = delegate_functions.delegate_image(name, editor_folder, original_path)
+        # pass image path, destination path and original path to delegate_image function
 
         if failed:
             operation_complete = True
@@ -1492,9 +1512,11 @@ def delegate_process(progress, activity_list, delegate_dir):
         next_index = activity_list.size() + 1
         activity_list.insert(next_index, f"Delegated to {editor_folder.split('/')[-1]}: {name} ")
         activity_list.yview_scroll(1, "unit")
+        # Update message box and average time
 
     notify.show_toast("Digestible", f"Delegate complete: Delegated {total_files} files")
     clean_up(delegate_dir)
+    # clean up empty folders and send windows notification
 
 
 def clean_up(path):
@@ -1514,6 +1536,7 @@ def clean_up(path):
                 shutil.rmtree(os.path.join(folder))
             except FileNotFoundError:
                 pass
+    # search through top level of directories, determine and delete empty folders
 
 
 def main(colour="#37352F", message=""):
@@ -1537,6 +1560,7 @@ def main(colour="#37352F", message=""):
         pass
     except KeyError:
         pass
+    # Check github for newest release
 
     style = "bold"
 
@@ -1547,9 +1571,11 @@ def main(colour="#37352F", message=""):
         message = "To begin using Taste (beta), ensure you have downloaded the required files and modified the specified option in settings. Refer to the user guide for more information."
         colour = "#37352F"
         style = "normal"
+    # Permanent messages to be shown if necessary
 
     canvas.create_text(290, 670, anchor="sw", justify="left", text=message, fill=colour,
                        font=("Courier", 16 * -1, style), width=340)
+    # display dynamic warning/information text
 
     banner, button_image_home, button_image_ingest, button_image_delegate, button_image_digest, button_image_help, button_image_settings = get_sidebar_assets()
 
@@ -1589,6 +1615,7 @@ def main(colour="#37352F", message=""):
 def make_complete():
     global operation_complete
     operation_complete = True
+    # set operation_complete to true
 
 
 def check_completion(canvas, abort_button, main_btn, ingest_btn, digest_btn, delegate_btn, help_btn, settings_btn):
@@ -1604,6 +1631,7 @@ def check_completion(canvas, abort_button, main_btn, ingest_btn, digest_btn, del
         delegate_btn["state"] = "normal"
         help_btn["state"] = "normal"
         settings_btn["state"] = "normal"
+    # if operation complete, enable sidebar buttons
 
     if len(image_list) == 0 and operation_complete:
         operation_complete = False
@@ -1611,6 +1639,7 @@ def check_completion(canvas, abort_button, main_btn, ingest_btn, digest_btn, del
     elif operation_complete:
         operation_complete = False
         main("#DE4E31", "Operation aborted")
+    # return to main if operation complete/failed
 
     canvas.after(200, lambda: check_completion(canvas, abort_button, main_btn, ingest_btn, digest_btn, delegate_btn, help_btn, settings_btn))
 
