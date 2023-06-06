@@ -1223,9 +1223,17 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
     elif operation_type == "Digesting":
         activity_list.place(x=300.0, y=150.0, width=600.0, height=460.0)
         preview_image = Image.open(asset_relative_path("Digestible Icon.png")).resize((200, 200))
-        test = ImageTk.PhotoImage(preview_image)
-        preview = tk.Label(image=test)
+        placeholder = ImageTk.PhotoImage(preview_image)
+        preview = tk.Label(image=placeholder)
         preview.place(x=945, y=150)
+
+        canvas.create_text(945, 381, text="Current image", anchor="w")
+
+        logo_img = Image.open(asset_relative_path("Digestible Icon.png")).resize((200, 200))
+        logo = ImageTk.PhotoImage(logo_img)
+        preview = tk.Label(image=logo)
+        preview.place(x=945, y=412)
+
         t1 = Thread(
             target=lambda: digest_process(progress, activity_list, folder, exposure, blur, taste, colour, selected_digest_dir))
         t1.start()
