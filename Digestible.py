@@ -710,7 +710,7 @@ def digest():
                            font=("Courier", 16 * -1))
 
     canvas.create_text(725, 180, anchor="n",
-                       text="\nWelcome to Digest. This should be the second part of your improved post-production workflow, After ingesting, you might want to cull through the images you've just taken, but why bother doing that yourself. The digest mode has 4 options: Colour dominance, Exposure, Blur and Taste.\n\nExposure is the simplest and most common reason for an unusable image, Digestible will identify and remove any irrecoverably underexposed or overexposed images from your ingest folder. Be careful when digesting images if shot intentionally in low light.\n\nThe blur option will identify unusable images based on how blurry the image is. Use with caution if images are intentionally blurry (e.g. panning action shots).\n\nThe colour dominance option will split images based on the colour that is most dominant in the frame.\n\nFinally, Taste will attempt to sort your images based on what is actually present in each frame and group them into folders.\n\nRemember digest mode is not human and does not perceive images the same way you do.\n\nHappy Digesting!",
+                       text="\nWelcome to Digest. This should be the second part of your improved post-production workflow, After ingesting, you might want to cull through the images you've just taken, but why bother doing that yourself. The digest mode has 4 options: Colour dominance, Exposure, Blur and Taste.\n\nExposure is the simplest and most common reason for an unusable image, Digestible will identify and remove any irrecoverably underexposed or overexposed images from your ingest folder. Be careful when digesting images if shot intentionally in low light.\n\nThe blur option will identify unusable images based on how blurry the image is. Use with caution if images are intentionally blurry (e.g. panning action shots).\n\nThe colour dominance option will split images based on the colour that is most dominant in the frame.\n\nFinally, Taste will attempt to sort your images based on what is actually present in each frame and group them into folders.\n\nRemember digest mode is not human and does not perceive images the same way you do.",
                        width=800, font=("Courier", 16 * -1), fill="#37352F")
 
     canvas.create_text(300.0, 610.0, anchor="nw", text="Options:", fill="#37352F", font=("Courier", 16 * -1, "bold"))
@@ -736,10 +736,7 @@ def digest():
 
     # Draw screen elements
 
-    if os.name == "nt":
-        file_path = selected_digest_dir.split('\\')[-2] + "\\" + selected_digest_dir.split('\\')[-1]
-    else:
-        file_path = f"{selected_digest_dir.split('/')[-2]}/{selected_digest_dir.split('/')[-1]}"
+    file_path = f"{selected_digest_dir.split('/')[-2]}/{selected_digest_dir.split('/')[-1]}"
     # edit file path to display based on os
 
     if len(file_path) > 55:
