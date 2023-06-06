@@ -65,7 +65,6 @@ window.resizable(False, False)
 version_number = "Digestible v0.4.0"
 
 # Initiate Windows toast notification service
-notify = ToastNotifier()
 window.iconbitmap(asset_relative_path("Digestible Icon.ico"))
 icon_image = tk.Image("photo", file=asset_relative_path("Digestible Icon.png"))
 window.tk.call('wm', 'iconphoto', window._w, icon_image)
@@ -1254,23 +1253,28 @@ def operation_in_progress(operation_type, colour=None, exposure=None, blur=None,
 
 
 def update_preview(preview):
-    while True:
+    prev_image = None
+    while len(image_list) > 0 and not operation_complete:
+        time.sleep(0.5)
         try:
-            image_to_show = Image.open(asset_relative_path("preview.png"))
+            uncropped_image = Image.open(asset_relative_path("preview.png"))
+            if uncropped_image != prev_image:
+                if uncropped_image.height > uncropped_image.width:
+                    crop_from_y = round((uncropped_image.height - uncropped_image.width) / 2)
+                    image_to_show = uncropped_image.crop((0, crop_from_y, uncropped_image.width, crop_from_y + uncropped_image.width))
 
-            if image_to_show.height > image_to_show.width:
-                crop_from_y = round((image_to_show.height - image_to_show.width) / 2)
-                image_to_show = image_to_show.crop((0, crop_from_y, image_to_show.width, crop_from_y + image_to_show.width))
+                else:
+                    crop_from_x = round((uncropped_image.width - uncropped_image.height) / 2)
+                    image_to_show = uncropped_image.crop((crop_from_x, 0, crop_from_x + uncropped_image.height, uncropped_image.height))
 
-            elif image_to_show.width > image_to_show.height:
-                crop_from_x = round((image_to_show.width - image_to_show.height) / 2)
-                image_to_show = image_to_show.crop((crop_from_x, 0, crop_from_x + image_to_show.height, image_to_show.height))
+                image_to_show = image_to_show.resize((200, 200))
+                preview_img = ImageTk.PhotoImage(image_to_show)
+                preview.configure(image=preview_img)
 
-            image_to_show = image_to_show.resize((200, 200))
-            preview_img = ImageTk.PhotoImage(image_to_show)
-            preview.configure(image=preview_img)
+            prev_image = uncropped_image
+            del preview_img
+            uncropped_image.close()
 
-            image_to_show.close()
         except PIL.UnidentifiedImageError:
             pass
         except FileNotFoundError:
@@ -1279,6 +1283,8 @@ def update_preview(preview):
             pass
         except SyntaxError:
             pass
+
+    del prev_image
 
 
 def check_filename(current_file, current_image):
